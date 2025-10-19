@@ -140,37 +140,50 @@ function evaluate(input) {
   return { score, level, message, reasons, hostname };
 }
 
-// UI wiring
 function renderResult(evalRes) {
   const resultado = document.getElementById("resultado");
   const detalles  = document.getElementById("detalles");
   const badge     = document.getElementById("scoreBadge");
 
-// Resultado principal
-resultado.className = "";
-resultado.classList.add(
-  evalRes.level === "ok" ? "ok" :
-  evalRes.level === "warn" ? "warn" : "bad"
-);
-
-// Solo mostramos el mensaje, quitamos lo de "Opinion: hostname"
-resultado.textContent = evalRes.message;
-
-  // Semáforo badge
+  // Limpiar
+  resultado.className = "";
   badge.className = "badge";
-  if (evalRes.level === "ok") badge.classList.add("badge-green");
-  else if (evalRes.level === "warn") badge.classList.add("badge-yellow");
-  else badge.classList.add("badge-red");
-  badge.textContent = `Confianza: ${evalRes.score}/100`;
+  detalles.innerHTML = ""; // ocultamos razones
 
-// Detalles/reasons (corregido para evitar "undefined")
-detalles.innerHTML = (evalRes.reasons || []).map(r => {
-  if (typeof r === "string") {
-    return `<div class='lite'>• ${r}</div>`;
+  // Semáforo visual
+  let html = `
+    <div class="traffic-light">
+      <div class="light red ${evalRes.level === "bad" ? "on" : ""}"></div>
+      <div class="light yellow ${evalRes.level === "warn" ? "on" : ""}"></div>
+      <div class="light green ${evalRes.level === "ok" ? "on" : ""}"></div>
+    </div>
+  `;
+
+  // Mensaje según nivel
+  if (evalRes.level === "ok") {
+    html += `
+      <p>🟢 <strong>Confiable</strong><br>
+      Fuente verificada.<br>
+      Todo indica que la información proviene de un medio confiable.<br>
+      Puedes leer y compartir con tranquilidad.</p>
+    `;
+  } else if (evalRes.level === "warn") {
+    html += `
+      <p>🟡 <strong>Dudoso</strong><br>
+      Fuente dudosa.<br>
+      La información podría ser real, pero conviene contrastarla con otros medios.<br>
+      Lee con cautela.</p>
+    `;
   } else {
-    return `<div class='lite'>${r.type ? r.type + ": " : ""}${r.text}</div>`;
+    html += `
+      <p>🔴 <strong>Falso</strong><br>
+      Fuente no verificada.<br>
+      Alta posibilidad de contenido falso o engañoso.<br>
+      No compartas sin confirmar en medios confiables.</p>
+    `;
   }
-}).join("");
+
+  resultado.innerHTML = html;
 }
 
 async function verificar() {

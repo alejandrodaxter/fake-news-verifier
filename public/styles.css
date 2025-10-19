@@ -12,3 +12,53 @@ body { font-family: Arial, sans-serif; }
 #detalles .pos { color: #22c55e; }
 #detalles .neg { color: #ef4444; }
 #detalles .neu { color: #94a3b8; }
+
+/* Contenedor del semáforo */
+.traffic-light {
+  width: 70px;
+  background: #222;
+  padding: 12px;
+  border-radius: 25px;
+  margin: 0 auto 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Cada luz del semáforo */
+.light {
+  width: 35px;
+  height: 35px;
+  margin: 8px 0;
+  border-radius: 50%;
+  background: #555; /* apagado */
+  opacity: 0.3;
+  transition: opacity 0.3s, box-shadow 0.3s;
+}
+
+/* Estados encendidos */
+.light.red.on {
+  background: #e53935;
+  opacity: 1;
+  box-shadow: 0 0 12px #e53935;
+}
+
+.light.yellow.on {
+  background: #fdd835;
+  opacity: 1;
+  box-shadow: 0 0 12px #fdd835;
+}
+
+.light.green.on {
+  background: #43a047;
+  opacity: 1;
+  box-shadow: 0 0 12px #43a047;
+}
+
+/* Texto del mensaje */
+#resultado p {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-top: 10px;
+}
