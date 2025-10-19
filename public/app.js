@@ -53,13 +53,13 @@ function evaluate(input) {
   const { hostname, protocol, path, tld, subdomains } = p;
 
   // Lista blanca
-  if (TRUSTED.includes(hostname)) {
-    score += 35;
-    reasons.push({ type: "pos", text: "Dominio en lista de medios confiables." });
-  } else {
-    score -= 10;
-    reasons.push({ type: "neg", text: "Dominio fuera de la lista confiable definida." });
-  }
+if (TRUSTED.some(domain => hostname === domain || hostname.endsWith("." + domain))) {
+  score += 35;
+  reasons.push({ type: "pos", text: "Dominio en lista de medios confiables." });
+} else {
+  score -= 10;
+  reasons.push({ type: "neg", text: "Dominio fuera de la lista confiable definida." });
+}
 
   // HTTPS
   if (protocol === "https:") {
