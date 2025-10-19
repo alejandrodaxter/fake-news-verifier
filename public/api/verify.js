@@ -64,19 +64,23 @@ export default async function handler(req, res) {
 
 const result = evaluate(url);
 
-// Simulación de fact-checks
-result.factChecks = [
-  {
-    text: "Ejemplo de verificación: esta noticia fue desmentida.",
-    claimReview: [
-      {
-        publisher: { name: "Chequeado" },
-        title: "La afirmación es falsa",
-        url: "https://chequeado.com/fake-news"
-      }
-    ]
-  }
-];
+// 🔹 Llamada a la API de Google Fact Check Tools
+const query = encodeURIComponent(url);
+const apiKey = process.env.GOOGLE_FACTCHECK_KEY;
+const apiUrl = `https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${query}&key=${apiKey}`;
 
-return res.status(200).json(result);
+const responseApi = await fetch(apiUrl);
+const factData = await responseApi.json();
+
+// Normalizar resultados
+const factChecks = (factData.claims || []).map(c => ({
+  text: c.text,
+  claimReview: c.claimReview
+}));
+
+// Combinar tu evaluación local con los fact-checks reales
+return res.status(200).json({
+  ...result,
+  factChecks
+});
 }
