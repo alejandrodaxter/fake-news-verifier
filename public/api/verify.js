@@ -62,10 +62,21 @@ export default async function handler(req, res) {
     return { score, message, reasons };
   }
 
-  const result = evaluate(url);
+const result = evaluate(url);
 
-  // Aquí podrías integrar Google Fact Check Tools API
-  // y añadir result.factChecks = [...]
+// Simulación de fact-checks
+result.factChecks = [
+  {
+    text: "Ejemplo de verificación: esta noticia fue desmentida.",
+    claimReview: [
+      {
+        publisher: { name: "Chequeado" },
+        title: "La afirmación es falsa",
+        url: "https://chequeado.com/fake-news"
+      }
+    ]
+  }
+];
 
-  return res.status(200).json(result);
+return res.status(200).json(result);
 }

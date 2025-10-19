@@ -145,6 +145,12 @@ function renderResult(evalRes) {
   const detalles  = document.getElementById("detalles");
   const badge     = document.getElementById("scoreBadge");
 
+    resultado.className = `resultado-${evalRes.level}`;
+  badge.className = "badge";
+  resultado.innerText = evalRes.message;
+
+  detalles.innerHTML = "<ul>" + evalRes.reasons.map(r => `<li>${r.text}</li>`).join("") + "</ul>";
+
   // 🔹 Normalizar el nivel recibido
   evalRes.level = evalRes.level?.toLowerCase();
   if (evalRes.level === "harm") evalRes.level = "bad";
