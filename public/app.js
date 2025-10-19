@@ -146,10 +146,15 @@ function renderResult(evalRes) {
   const detalles  = document.getElementById("detalles");
   const badge     = document.getElementById("scoreBadge");
 
-  // Resultado principal
-  resultado.className = "";
-  resultado.classList.add(evalRes.level === "ok" ? "ok" : evalRes.level === "warn" ? "warn" : "bad");
-  resultado.textContent = `${evalRes.message} (Dominio: ${evalRes.hostname || "—"})`;
+// Resultado principal
+resultado.className = "";
+resultado.classList.add(
+  evalRes.level === "ok" ? "ok" :
+  evalRes.level === "warn" ? "warn" : "bad"
+);
+
+// Solo mostramos el mensaje, quitamos lo de "Opinion: hostname"
+resultado.textContent = evalRes.message;
 
   // Semáforo badge
   badge.className = "badge";
@@ -158,12 +163,14 @@ function renderResult(evalRes) {
   else badge.classList.add("badge-red");
   badge.textContent = `Confianza: ${evalRes.score}/100`;
 
-  // Detalles/razones
-  detalles.innerHTML = evalRes.reasons.map(r => `
-    <div class="item ${r.type}">
-      • ${r.text}
-    </div>
-  `).join("");
+// Detalles/reasons (corregido para evitar "undefined")
+detalles.innerHTML = (evalRes.reasons || []).map(r => {
+  if (typeof r === "string") {
+    return `<div class='lite'>• ${r}</div>`;
+  } else {
+    return `<div class='lite'>${r.type ? r.type + ": " : ""}${r.text}</div>`;
+  }
+}).join("");
 }
 
 async function verificar() {
