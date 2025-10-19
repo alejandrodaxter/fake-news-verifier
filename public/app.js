@@ -205,6 +205,8 @@ async function verificar() {
     });
 
     const data = await response.json();
+const evalRes = evaluate(data.url); // usa tu lógica local
+renderResult(evalRes);
 
     // Renderiza el resultado principal (score, mensaje, razones)
     renderResult(data);
