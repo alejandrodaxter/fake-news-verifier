@@ -1,8 +1,8 @@
 body { font-family: Arial, sans-serif; }
 
-#resultado.ok { color: #22c55e; }      /* verde */
-#resultado.warn { color: #facc15; }    /* amarillo */
-#resultado.bad { color: #ef4444; }     /* rojo */
+.resultado-ok p { color: #22c55e; }   /* verde */
+.resultado-warn p { color: #facc15; } /* amarillo */
+.resultado-bad p { color: #ef4444; }  /* rojo */
 
 .badge-green  { background-color: #22c55e; color: #0b3b1b; }
 .badge-yellow { background-color: #facc15; color: #3b2f0b; }
