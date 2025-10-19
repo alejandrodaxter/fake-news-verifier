@@ -154,7 +154,25 @@ function renderResult(evalRes) {
   // 🔹 Limpiar y asignar clase según nivel
   resultado.className = `resultado-${evalRes.level}`;
   badge.className = "badge";
-  detalles.innerHTML = "";
+  detalles.innerHTML = "<ul>" + evalRes.reasons.map(r => `<li>${r.text}</li>`).join("") + "</ul>";
+
+  const factDiv = document.getElementById("factchecks");
+if (data.factChecks && data.factChecks.length > 0) {
+  factDiv.innerHTML = `
+    <h3>Verificaciones encontradas:</h3>
+    <ul>
+      ${data.factChecks.map(fc => `
+        <li>
+          <strong>${fc.claimReview?.[0]?.publisher?.name || "Fuente desconocida"}</strong>: 
+          ${fc.text || fc.claimReview?.[0]?.title || "Sin descripción"} 
+          <a href="${fc.claimReview?.[0]?.url}" target="_blank">Ver más</a>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+} else {
+  factDiv.innerHTML = "<p>No se encontraron verificaciones externas.</p>";
+}
 
 
   // Semáforo visual
@@ -208,9 +226,7 @@ async function verificar() {
 const evalRes = evaluate(data.url); // usa tu lógica local
 renderResult(evalRes);
 
-    // Renderiza el resultado principal (score, mensaje, razones)
-    renderResult(data);
-
+ 
     // 🔹 Mostrar fact-checks si existen
     const factDiv = document.getElementById("factchecks");
     if (data.factChecks && data.factChecks.length > 0) {
