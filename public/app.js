@@ -145,10 +145,17 @@ function renderResult(evalRes) {
   const detalles  = document.getElementById("detalles");
   const badge     = document.getElementById("scoreBadge");
 
-  // Limpiar
-  resultado.className = "";
+  // 🔹 Normalizar el nivel recibido
+  evalRes.level = evalRes.level?.toLowerCase();
+  if (evalRes.level === "harm") evalRes.level = "bad";
+
+  console.log("Nivel recibido:", evalRes.level); // Para depurar
+
+  // 🔹 Limpiar y asignar clase según nivel
+  resultado.className = `resultado-${evalRes.level}`;
   badge.className = "badge";
-  detalles.innerHTML = ""; // ocultamos razones
+  detalles.innerHTML = "";
+
 
   // Semáforo visual
   let html = `
@@ -217,8 +224,6 @@ async function verificar() {
           `).join("")}
         </ul>
       `;
-    } else {
-      factDiv.innerHTML = "<p>No se encontraron verificaciones externas.</p>";
     }
 
   } catch (err) {

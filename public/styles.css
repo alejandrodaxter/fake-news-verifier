@@ -62,3 +62,15 @@ body { font-family: Arial, sans-serif; }
   line-height: 1.4;
   margin-top: 10px;
 }
+
+.resultado-ok p {
+  color: #22c55e; /* verde */
+}
+
+.resultado-warn p {
+  color: #facc15; /* amarillo */
+}
+
+.resultado-bad p {
+  color: #ef4444; /* rojo */
+}
