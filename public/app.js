@@ -166,10 +166,45 @@ function renderResult(evalRes) {
   `).join("");
 }
 
-function verificar() {
+async function verificar() {
   const input = document.getElementById("inputUrl").value.trim();
-  const evalRes = evaluate(input);
-  renderResult(evalRes);
+  if (!input) return;
+
+  try {
+    const response = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: input })
+    });
+
+    const data = await response.json();
+
+    // Renderiza el resultado principal (score, mensaje, razones)
+    renderResult(data);
+
+    // 🔹 Mostrar fact-checks si existen
+    const factDiv = document.getElementById("factchecks");
+    if (data.factChecks && data.factChecks.length > 0) {
+      factDiv.innerHTML = `
+        <h3>Verificaciones encontradas:</h3>
+        <ul>
+          ${data.factChecks.map(fc => `
+            <li>
+              <strong>${fc.claimReview?.[0]?.publisher?.name || "Fuente desconocida"}</strong>: 
+              ${fc.text || fc.claimReview?.[0]?.title || "Sin descripción"} 
+              <a href="${fc.claimReview?.[0]?.url}" target="_blank">Ver más</a>
+            </li>
+          `).join("")}
+        </ul>
+      `;
+    } else {
+      factDiv.innerHTML = "<p>No se encontraron verificaciones externas.</p>";
+    }
+
+  } catch (err) {
+    console.error("Error llamando a la API:", err);
+    alert("Hubo un problema verificando la URL.");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
