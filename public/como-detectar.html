@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cómo Detectar Fake News - FAKE NEWS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #0f1117;
+      color: #f5f5f5;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(15, 17, 23, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 76, 76, 0.1);
+    }
+
+    nav .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff4c4c;
+      text-decoration: none;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+    }
+
+    nav ul li a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav ul li a:hover {
+      color: #ff4c4c;
+    }
+
+    .hero {
+      padding: 150px 30px 100px;
+      text-align: center;
+      background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      color: #ff4c4c;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 1.3rem;
+      color: #94a3b8;
+    }
+
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 30px;
+    }
+
+    .intro-section {
+      background: rgba(26, 29, 41, 0.6);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 60px;
+      border-left: 4px solid #ff4c4c;
+    }
+
+    .intro-section h2 {
+      color: #ff4c4c;
+      margin-bottom: 15px;
+    }
+
+    .intro-section p {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 1.1rem;
+    }
+
+    .tip-card {
+      background: rgba(26, 29, 41, 0.8);
+      border-left: 4px solid #ff4c4c;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+
+    .tip-card:hover {
+      transform: translateX(10px);
+    }
+
+    .tip-card h3 {
+      color: #ff4c4c;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tip-number {
+      background: #ff4c4c;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .tip-card p {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 1.1rem;
+    }
+
+    .warning-box {
+      background: rgba(255, 76, 76, 0.1);
+      border: 2px solid #ff4c4c;
+      padding: 30px;
+      border-radius: 10px;
+      margin: 40px 0;
+    }
+
+    .warning-box h3 {
+      color: #ff4c4c;
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+
+    .warning-box ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .warning-box ul li {
+      padding: 10px 0;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .warning-box ul li:before {
+      content: "⚠️";
+      margin-right: 10px;
+    }
+
+    .tech-box {
+      background: rgba(34, 197, 94, 0.1);
+      border: 2px solid #22c55e;
+      padding: 30px;
+      border-radius: 10px;
+      margin: 40px 0;
+    }
+
+    .tech-box h3 {
+      color: #22c55e;
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+
+    .tech-box p {
+      color: #cbd5e1;
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+
+    .tech-box ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 20px;
+    }
+
+    .tech-box ul li {
+      padding: 10px 0;
+      color: #cbd5e1;
+      font-size: 1.05rem;
+    }
+
+    .tech-box ul li:before {
+      content: "✓";
+      color: #22c55e;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin: 60px 0;
+      padding: 60px 30px;
+      background: rgba(255, 76, 76, 0.05);
+      border-radius: 20px;
+    }
+
+    .cta-section h2 {
+      color: #ff4c4c;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      color: #94a3b8;
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #ff4c4c 0%, #e63b3b 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: transform 0.3s;
+      font-size: 1.1rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .btn-back {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 76, 76, 0.3);
+      margin-right: 15px;
+    }
+
+    footer {
+      background: rgba(15, 17, 23, 0.95);
+      padding: 40px 30px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 76, 76, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      .hero h1 { font-size: 2rem; }
+      .tip-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="Logo Fake News.png" alt="Fake News" style="height: 40px; width: auto;">
+      </a>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+        <li><a href="como-detectar.html">Cómo Detectar</a></li>
+        <li><a href="verificador.html">Verificador</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>¿Cómo Detectar Fake News?</h1>
+    <p>Aprende a identificar información falsa y protégete de la desinformación</p>
+  </section>
+
+  <div class="content">
+    
+    <div class="intro-section">
+      <h2>🛡️ Nuestro Enfoque: Detección Automática + Verificación Profesional</h2>
+      <p>
+        Nuestro verificador combina <strong>análisis automático de URLs</strong> con <strong>verificación en bases de datos profesionales</strong>. 
+        Esto te da una doble capa de protección contra la desinformación.
+      </p>
+    </div>
+
+    <div class="tech-box">
+      <h3>⚡ Cómo Funciona Nuestro Verificador</h3>
+      <p>Cuando pegas una URL en nuestro verificador, analizamos en segundos:</p>
+      <ul>
+        <li><strong>Confiabilidad del dominio:</strong> ¿Es un medio reconocido?</li>
+        <li><strong>Seguridad de la conexión:</strong> ¿Usa HTTPS?</li>
+        <li><strong>Señales sospechosas:</strong> Dominios falsos, acortadores, clickbait</li>
+        <li><strong>Verificaciones profesionales:</strong> Consultamos Google Fact Check y NewsAPI</li>
+      </ul>
+      <p style="margin-top: 20px;">
+        <strong>Resultado:</strong> Un semáforo visual (🟢 verde, 🟡 amarillo, 🔴 rojo) que te indica 
+        si la noticia es confiable, dudosa o riesgosa.
+      </p>
+    </div>
+
+    <h2 style="color: #ff4c4c; margin: 60px 0 30px; font-size: 2rem;">📋 Guía Manual: Cómo Verificar Tú Mismo</h2>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">1</span> Verifica la Fuente</h3>
+      <p>
+        Antes de compartir, pregúntate: ¿De dónde viene esta información? Busca medios de comunicación reconocidos 
+        y confiables como El Tiempo, El Espectador, Semana, BBC o Reuters. Desconfía de sitios web desconocidos o con diseños poco profesionales.
+      </p>
+    </div>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">2</span> Revisa la URL</h3>
+      <p>
+        Los sitios de noticias falsas suelen usar dominios extraños (.xyz, .tk, .info) o imitan nombres de medios 
+        reales con pequeños cambios (ej: "nytimes.co" en lugar de "nytimes.com"). 
+        <strong>Usa nuestro verificador automático</strong> para analizar URLs sospechosas.
+      </p>
+    </div>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">3</span> Busca Otras Fuentes</h3>
+      <p>
+        Si una noticia es real, probablemente varios medios confiables la habrán cubierto. Busca la información 
+        en Google y verifica si aparece en medios reconocidos. También puedes consultar fact-checkers como 
+        ColombiaCheck, Chequeado o Politifact.
+      </p>
+    </div>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">4</span> Analiza el Contenido</h3>
+      <p>
+        Lee más allá del titular. Las noticias falsas suelen usar titulares sensacionalistas para generar clicks. 
+        Revisa la redacción: ¿tiene errores ortográficos? ¿Usa lenguaje emotivo excesivo? ¿Cita fuentes verificables?
+      </p>
+    </div>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">5</span> Verifica Fechas e Imágenes</h3>
+      <p>
+        Usa la búsqueda inversa de imágenes de Google para verificar si las fotos son reales o han sido manipuladas. 
+        Revisa las fechas: a veces se comparten noticias viejas como si fueran actuales.
+      </p>
+    </div>
+
+    <div class="tip-card">
+      <h3><span class="tip-number">6</span> Cuidado con la IA</h3>
+      <p>
+        La Inteligencia Artificial puede generar imágenes, videos y textos extremadamente realistas. 
+        Busca señales como inconsistencias en rostros, movimientos poco naturales, dedos deformados o detalles extraños en el fondo.
+      </p>
+    </div>
+
+    <div class="warning-box">
+      <h3>⚠️ Señales de Alerta</h3>
+      <ul>
+        <li>Titulares con MAYÚSCULAS EXCESIVAS o signos de exclamación!!!</li>
+        <li>Promesas de información "que los medios no quieren que sepas"</li>
+        <li>Historias que apelan fuertemente a las emociones (miedo, ira, sorpresa extrema)</li>
+        <li>Falta de autor o fecha de publicación</li>
+        <li>Solicitudes de compartir urgentemente antes de "que lo censuren"</li>
+        <li>URLs acortadas que ocultan el destino real</li>
+        <li>Contenido que confirma exactamente lo que quieres creer</li>
+      </ul>
+    </div>
+
+    <div class="cta-section">
+      <h2>¿Tienes una URL sospechosa?</h2>
+      <p>Usa nuestro verificador automático para analizar la confiabilidad de cualquier noticia en segundos</p>
+      <a href="index.html" class="btn btn-back">← Volver al Inicio</a>
+      <a href="verificador.html" class="btn">🔍 Verificar Ahora</a>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Hecho con 💡 para combatir la desinformación | 2025</p>
+  </footer>
+</body>
+</html>

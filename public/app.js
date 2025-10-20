@@ -99,7 +99,12 @@ async function verificar() {
   relatedDiv.innerHTML = "";
 
   try {
-    const response = await fetch("/api/verify", {
+    // Detectar automáticamente si es Netlify o Vercel
+const API_URL = window.location.hostname.includes('netlify') 
+  ? '/.netlify/functions/verify' 
+  : '/api/verify';
+
+const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: input })
@@ -164,15 +169,13 @@ async function verificar() {
     } else {
       relatedDiv.innerHTML = `
         <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
-          <h3 style="color: #facc15;">⚠️ Sin verificaciones externas</h3>
-          <p style="color: #94a3b8; line-height: 1.6;">
-            No encontramos esta noticia en bases de fact-checkers ni en medios colombianos reconocidos.<br><br>
-            <strong>Esto puede significar:</strong><br>
-            • La noticia es muy reciente y aún no ha sido verificada<br>
-            • No está indexada en estas bases de datos<br>
-            • Puede provenir de un medio menos conocido<br><br>
-            <strong style="color: #22c55e;">💡 Recomendación:</strong> Busca la noticia en medios reconocidos como 
-            El Tiempo, El Espectador o Semana para confirmar su veracidad.
+          <h3 style="color: #facc15;">😕 Ups, no encontramos verificaciones para esta noticia</h3>
+          <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
+            Esto no significa que sea falsa, solo que aún no está en nuestras bases de datos.<br><br>
+            <strong style="color: #22c55e;">💡 Pero tranquilo, puedes verificarla manualmente en:</strong><br>
+            <a href="https://colombiacheck.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">ColombiaCheck</a> | 
+            <a href="https://chequeado.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Chequeado</a> | 
+            <a href="https://www.politifact.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Politifact</a>
           </p>
         </div>
       `;
