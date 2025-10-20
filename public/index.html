@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Detector de Fake News</title>
+  <title>🔍 Detector de Fake News | Verifica la verdad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Detector de noticias falsas. Verifica la veracidad de URLs en tiempo real.">
   <link rel="stylesheet" href="./styles.css">
   
   <style>
@@ -11,7 +12,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', Roboto, sans-serif;
-      background-color: #0f1117;
+      background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
       color: #f5f5f5;
       display: flex;
       justify-content: center;
@@ -21,50 +22,106 @@
     }
 
     .card {
-      background: #1a1d29;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-      padding: 30px;
-      max-width: 500px;
+      background: rgba(26, 29, 41, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 60px rgba(255,76,76,0.1);
+      padding: 40px;
+      max-width: 550px;
       width: 100%;
       text-align: center;
       animation: fadeIn 0.6s ease;
+      border: 1px solid rgba(255,76,76,0.1);
     }
 
     h1 {
       color: #ff4c4c;
-      margin-bottom: 20px;
-      font-size: 1.8rem;
+      margin-bottom: 10px;
+      font-size: 2rem;
+      font-weight: 700;
+      text-shadow: 0 2px 10px rgba(255,76,76,0.3);
+    }
+
+    .logo-container {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .logo {
+      max-width: 320px;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 4px 15px rgba(255,76,76,0.3));
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 30px;
+      font-weight: 400;
     }
 
     .input-group {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      position: relative;
     }
 
     input {
       flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,76,76,0.2);
       outline: none;
       font-size: 1rem;
+      background: rgba(42, 45, 58, 0.8);
+      color: #f5f5f5;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus {
+      border-color: #ff4c4c;
+      box-shadow: 0 0 0 3px rgba(255,76,76,0.1);
+    }
+
+    input::placeholder {
+      color: #64748b;
     }
 
     button {
-      background: #ff4c4c;
+      background: linear-gradient(135deg, #ff4c4c 0%, #e63b3b 100%);
       border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
+      padding: 14px 24px;
+      border-radius: 10px;
       color: #fff;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255,76,76,0.3);
+      font-size: 1rem;
     }
 
     button:hover {
-      background: #e63b3b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,76,76,0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .result {
@@ -102,14 +159,20 @@
       text-align: left;
       font-size: 0.9rem;
       color: #ccc;
+      background: rgba(42, 45, 58, 0.5);
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 3px solid #ff4c4c;
     }
 
     .details ul {
       padding-left: 20px;
+      margin: 5px 0;
     }
 
     .details li {
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      line-height: 1.5;
     }
 
     .btn-secondary {
@@ -119,6 +182,27 @@
 
     .btn-secondary:hover {
       background: #3a3d4a;
+    }
+
+    #corroborations {
+      margin-top: 20px;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     @keyframes fadeIn {
@@ -132,16 +216,45 @@
     }
 
     @media (max-width: 600px) {
-      .card { padding: 20px; }
-      h1 { font-size: 1.5rem; }
+      .card { 
+        padding: 25px; 
+        border-radius: 16px;
+      }
+      h1 { font-size: 1.6rem; }
+      .logo { max-width: 200px; }
+      .input-group { 
+        flex-direction: column; 
+      }
+      button { 
+        width: 100%; 
+      }
+    }
+
+    /* Footer pequeño */
+    .footer {
+      position: fixed;
+      bottom: 10px;
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="card">
+    <div class="logo-container">
+      <img src="Logo Fake News.png" alt="Fake News Detector" class="logo">
+    </div>
     <h1>Detector de Fake News</h1>
+    <p class="subtitle">Verifica la veracidad de cualquier noticia en segundos</p>
+    
     <div class="input-group">
-      <input type="url" id="inputUrl" placeholder="Pega aquí la URL de la noticia">
+      <input 
+        type="url" 
+        id="inputUrl" 
+        placeholder="Pega aquí la URL de la noticia..."
+        autocomplete="off"
+      >
       <button id="btnVerificar">Verificar</button>
     </div>
 
@@ -151,6 +264,10 @@
 
     <div id="factchecks" class="mt-4 text-start"></div>
     <div id="corroborations"></div>
+  </div>
+
+  <div class="footer">
+    Hecho con 💡 para combatir la desinformación
   </div>
 
   <script src="app.js"></script>
