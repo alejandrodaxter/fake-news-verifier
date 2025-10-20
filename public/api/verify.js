@@ -32,13 +32,25 @@ export default async function handler(req, res) {
 
     const { hostname, protocol } = p;
 
-    if (hostname.endsWith("eltiempo.com") || hostname.endsWith("elespectador.com")) {
-      score += 35;
-      reasons.push("Dominio en lista confiable de Colombia.");
-    } else {
-      score -= 10;
-      reasons.push("Dominio fuera de la lista confiable definida.");
-    }
+const TRUSTED_CO = [
+  "eltiempo.com",
+  "elespectador.com",
+  "semana.com",
+  "rcnradio.com",
+  "caracol.com.co",
+  "noticias.caracoltv.com",
+  "lasillavacia.com",
+  "elcolombiano.com",
+  "portafolio.co"
+];
+
+if (TRUSTED_CO.some(domain => hostname.endsWith(domain))) {
+  score += 35;
+  reasons.push("Dominio en lista confiable de Colombia.");
+} else {
+  score -= 10;
+  reasons.push("Dominio fuera de la lista confiable definida.");
+}
 
     if (protocol === "https:") {
       score += 10;
