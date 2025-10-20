@@ -50,33 +50,50 @@ export default async function handler(req, res) {
 
     score = Math.max(0, Math.min(100, score));
 
-    let message;
+    let message, level;
     if (score >= 60) {
       message = "Puedes disfrutar de esta noticia sin problemas.";
+      level = "ok";
     } else if (score >= 35) {
       message = "Recomendamos indagar más en la página. Aquí tienes algunas fuentes confiables.";
+      level = "warn";
     } else {
       message = "Aléjate de esta página. Mejor consulta estas fuentes recomendadas.";
+      level = "bad";
     }
 
-    return { score, message, reasons };
+    return { score,level, message, reasons };
   }
 
 const result = evaluate(url);
 
-// 🔹 Llamada a la API de Google Fact Check Tools
-const query = encodeURIComponent(url);
+// 🔹 Preparar query: intentamos usar el <title> de la página, si no, la URL
+let query = encodeURIComponent(url); // fallback
+try {
+  const page = await fetch(url);
+  const html = await page.text();
+  const match = html.match(/<title>(.*?)<\/title>/i);
+  if (match && match[1]) {
+    query = encodeURIComponent(match[1]); // usamos el título si existe
+  }
+} catch (err) {
+  console.error("No se pudo extraer título:", err);
+}
+
 const apiKey = process.env.GOOGLE_FACTCHECK_KEY;
 const apiUrl = `https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${query}&key=${apiKey}`;
 
-const responseApi = await fetch(apiUrl);
-const factData = await responseApi.json();
-
-// Normalizar resultados
-const factChecks = (factData.claims || []).map(c => ({
-  text: c.text,
-  claimReview: c.claimReview
-}));
+let factChecks = [];
+try {
+  const responseApi = await fetch(apiUrl);
+  const factData = await responseApi.json();
+  factChecks = (factData.claims || []).map(c => ({
+    text: c.text,
+    claimReview: c.claimReview
+  }));
+} catch (err) {
+  console.error("Error consultando la API de Google:", err);
+}
 
 // Combinar tu evaluación local con los fact-checks reales
 return res.status(200).json({

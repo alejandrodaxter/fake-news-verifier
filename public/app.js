@@ -230,6 +230,11 @@ renderResult(evalRes);
           `).join("")}
         </ul>
       `;
+      } else {
+  factDiv.innerHTML = `
+    <p>Ups, parece que no hay resultados para esta noticia todavía.<br>
+    Esto no significa que sea falsa, solo que aún no ha sido verificada en las bases de datos.</p>
+  `;
     }
 
   } catch (err) {
