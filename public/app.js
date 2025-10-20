@@ -215,32 +215,47 @@ const evalRes = evaluate(data.url); // usa tu lógica local
 renderResult(evalRes);
 
  
-    // 🔹 Mostrar fact-checks si existen
-    const factDiv = document.getElementById("factchecks");
-    if (data.factChecks && data.factChecks.length > 0) {
-      factDiv.innerHTML = `
-        <h3>Verificaciones encontradas:</h3>
+    // 🔹 Unificar fact-checks (Google) y corroboraciones (NewsAPI)
+    const relatedDiv = document.getElementById("corroborations");
+
+    // Combinar ambos arrays en uno solo
+    const combined = [
+      ...(data.factChecks || []).map(fc => ({
+        source: fc.claimReview?.[0]?.publisher?.name || "Fuente desconocida",
+        title: fc.text || fc.claimReview?.[0]?.title || "Sin descripción",
+        url: fc.claimReview?.[0]?.url
+      })),
+      ...(data.corroborations || []).map(c => ({
+        source: c.source,
+        title: c.title,
+        url: c.url
+      }))
+    ];
+
+    // Renderizar
+    if (combined.length > 0) {
+      relatedDiv.innerHTML = `
+        <h3>Noticias relacionadas en medios confiables:</h3>
         <ul>
-          ${data.factChecks.map(fc => `
+          ${combined.map(item => `
             <li>
-              <strong>${fc.claimReview?.[0]?.publisher?.name || "Fuente desconocida"}</strong>: 
-              ${fc.text || fc.claimReview?.[0]?.title || "Sin descripción"} 
-              <a href="${fc.claimReview?.[0]?.url}" target="_blank">Ver más</a>
+              <strong>${item.source}</strong>: 
+              <a href="${item.url}" target="_blank">${item.title}</a>
             </li>
           `).join("")}
         </ul>
       `;
-      } else {
-  factDiv.innerHTML = `
-    <p>Ups, parece que no hay resultados para esta noticia todavía.<br>
-    Esto no significa que sea falsa, solo que aún no ha sido verificada en las bases de datos.</p>
-  `;
+    } else {
+      relatedDiv.innerHTML = `
+        <p>Ups, parece que no hay resultados para esta noticia todavía.<br>
+        Esto no significa que sea falsa, solo que aún no ha sido verificada en las bases de datos.</p>
+      `;
     }
 
-  } catch (err) {
-    console.error("Error llamando a la API:", err);
-    alert("Hubo un problema verificando la URL.");
-  }
+} catch (err) {
+  console.error("Error llamando a la API:", err);
+  alert("Hubo un problema verificando la URL.");
+}
 }
 
 document.addEventListener("DOMContentLoaded", () => {

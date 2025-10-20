@@ -95,9 +95,40 @@ try {
   console.error("Error consultando la API de Google:", err);
 }
 
-// Combinar tu evaluación local con los fact-checks reales
+// 🔹 Consulta NewsAPI para ver si la noticia aparece en medios confiables colombianos
+let corroborations = [];
+try {
+  const newsUrl = `https://newsapi.org/v2/everything?q=${query}&language=es&apiKey=${process.env.NEWSAPI_KEY}`;
+  const respNews = await fetch(newsUrl);
+  const newsData = await respNews.json();
+
+  const TRUSTED_CO = [
+    "eltiempo.com",
+    "elespectador.com",
+    "semana.com",
+    "rcnradio.com",
+    "caracol.com.co",
+    "noticias.caracoltv.com",
+    "lasillavacia.com",
+    "elcolombiano.com",
+    "portafolio.co"
+  ];
+
+  corroborations = (newsData.articles || [])
+    .filter(a => TRUSTED_CO.some(domain => a.url.includes(domain)))
+    .map(a => ({
+      source: a.source.name,
+      title: a.title,
+      url: a.url
+    }));
+} catch (err) {
+  console.error("Error consultando NewsAPI:", err);
+}
+
+// Combinar tu evaluación local con los fact-checks reales y corroboraciones
 return res.status(200).json({
-  ...result,
-  factChecks
+  ...result,       // tu evaluación local
+  factChecks,      // verificaciones de Google
+  corroborations   // coincidencias en medios confiables colombianos
 });
 }
