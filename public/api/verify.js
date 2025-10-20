@@ -67,18 +67,33 @@ export default async function handler(req, res) {
 
 const result = evaluate(url);
 
-// 🔹 Preparar query: intentamos usar el <title> de la página, si no, la URL
-let query = encodeURIComponent(url); // fallback
+// 🔹 Preparar query para APIs
+let query = ""; 
+
+try {
+  const urlObj = new URL(url);
+  const parts = urlObj.pathname.split("/").filter(Boolean);
+  // Tomamos la última parte del path como keyword (ej: "dubai-xxxx")
+  query = parts[parts.length - 1] || urlObj.hostname;
+} catch (e) {
+  console.error("No se pudo extraer keyword de la URL:", e);
+  query = url; // fallback
+}
+
+// Intentar mejorar con el <title> de la página
 try {
   const page = await fetch(url);
   const html = await page.text();
   const match = html.match(/<title>(.*?)<\/title>/i);
   if (match && match[1]) {
-    query = encodeURIComponent(match[1]); // usamos el título si existe
+    query = match[1]; // usamos el título si existe
   }
 } catch (err) {
   console.error("No se pudo extraer título:", err);
 }
+
+// Codificar para usar en las APIs
+query = encodeURIComponent(query);
 
 const apiKey = process.env.GOOGLE_FACTCHECK_KEY;
 const apiUrl = `https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${query}&key=${apiKey}`;
