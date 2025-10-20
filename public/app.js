@@ -211,8 +211,9 @@ async function verificar() {
     });
 
     const data = await response.json();
-const evalRes = evaluate(data.url); // usa tu lógica local
-renderResult(evalRes);
+
+// Usa directamente el resultado del backend
+renderResult(data);
 
  
     // 🔹 Unificar fact-checks (Google) y corroboraciones (NewsAPI)
