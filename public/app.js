@@ -42,10 +42,18 @@ function renderResult(evalRes) {
   resultado.className = `resultado-${evalRes.level}`;
   badge.className = "badge";
 
-  // Renderizar detalles (razones)
-  if (evalRes.reasons && evalRes.reasons.length > 0) {
-    detalles.innerHTML = "<ul>" + evalRes.reasons.map(r => `<li>${r}</li>`).join("") + "</ul>";
-  }
+  const ocultar = [
+  "✅ Dominio en lista de medios confiables",
+  "🔒 Conexión segura (HTTPS)"
+];
+
+const visibles = evalRes.reasons?.filter(r => !ocultar.includes(r)) || [];
+
+if (visibles.length > 0) {
+  detalles.innerHTML = "<ul>" + visibles.map(r => `<li>${r}</li>`).join("") + "</ul>";
+} else {
+  detalles.innerHTML = ""; // No deja espacio vacío
+}
 
   // Semáforo visual
   let html = `
@@ -169,7 +177,7 @@ const response = await fetch(API_URL, {
     } else {
       relatedDiv.innerHTML = `
         <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
-          <h3 style="color: #facc15;">😕 Ups, no encontramos verificaciones para esta noticia</h3>
+          <h3 style="color: #facc15;">😕 Esta noticia aún no ha sido verificada</h3>
           <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
             Esto no significa que sea falsa, solo que aún no está en nuestras bases de datos.<br><br>
             <strong style="color: #22c55e;">💡 Pero tranquilo, puedes verificarla manualmente en:</strong><br>
