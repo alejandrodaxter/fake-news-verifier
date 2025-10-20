@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     }
 
     const { hostname, protocol } = p;
+    console.log("DEBUG hostname:", hostname);
 
 const TRUSTED_CO = [
   "eltiempo.com",
