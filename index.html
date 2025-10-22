@@ -332,10 +332,251 @@
 
     </div>
   </section>
+<!-- Sección Comunidad Instagram -->
+<section class="instagram-section">
+  <div class="instagram-container">
+    <h2>📸 Únete a Nuestra Comunidad</h2>
+    <p class="instagram-subtitle">Síguenos en Instagram para contenido diario sobre fake news</p>
+    
+    <div class="instagram-card">
+      <div class="instagram-header">
+        <div class="instagram-icon">📸</div>
+        <div class="instagram-info">
+          <h3>@f4kee_news</h3>
+          <p>Tips | Casos Virales | Educación Digital</p>
+        </div>
+      </div>
+      
+      <div class="instagram-preview">
+        <div class="preview-item">
+          <span class="preview-icon">💡</span>
+          <p>Tips para detectar fake news</p>
+        </div>
+        <div class="preview-item">
+          <span class="preview-icon">🔍</span>
+          <p>Casos virales explicados</p>
+        </div>
+        <div class="preview-item">
+          <span class="preview-icon">📚</span>
+          <p>Educación sobre desinformación</p>
+        </div>
+      </div>
+      
+      <a href="https://www.instagram.com/f4kee_news/" target="_blank" class="btn-instagram">
+        <span>Seguir en Instagram</span>
+        <span style="margin-left: 10px;">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+.instagram-section {
+  background: linear-gradient(135deg, #833AB4 0%, #fd1d1d 50%, #fcaf45 100%);
+  padding: 100px 30px;
+  text-align: center;
+}
+
+.instagram-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.instagram-section h2 {
+  color: white;
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.instagram-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+}
+
+.instagram-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 25px;
+  padding: 50px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.instagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.instagram-icon {
+  font-size: 4rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.instagram-info {
+  text-align: left;
+}
+
+.instagram-info h3 {
+  color: #1a1d29;
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+}
+
+.instagram-info p {
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.instagram-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.preview-item {
+  background: rgba(131, 58, 180, 0.05);
+  padding: 20px;
+  border-radius: 15px;
+  border: 2px solid rgba(131, 58, 180, 0.1);
+}
+
+.preview-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.preview-item p {
+  color: #1a1d29;
+  font-weight: 600;
+}
+
+.btn-instagram {
+  display: inline-flex;
+  align-items: center;
+  padding: 18px 50px;
+  background: linear-gradient(135deg, #833AB4 0%, #fd1d1d 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 5px 20px rgba(131, 58, 180, 0.4);
+}
+
+.btn-instagram:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(131, 58, 180, 0.6);
+}
+
+@media (max-width: 768px) {
+  .instagram-section h2 {
+    font-size: 2rem;
+  }
+  
+  .instagram-card {
+    padding: 30px 20px;
+  }
+  
+  .instagram-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .instagram-info {
+    text-align: center;
+  }
+  
+  .instagram-preview {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 
   <!-- Footer -->
-  <footer>
-    <p>Hecho con 💡 para combatir la desinformación | 2025</p>
+<footer>
+    <div class="footer-content">
+      <h3 style="color: #ff4c4c; margin-bottom: 20px; font-size: 1.5rem;">Únete a la Comunidad</h3>
+      <p style="color: #94a3b8; margin-bottom: 30px;">Síguenos en redes sociales para tips diarios sobre fake news</p>
+      
+      <div class="social-links">
+        <a href="https://www.instagram.com/f4kee_news/" target="_blank" class="social-btn instagram">
+          <span class="social-icon">📸</span>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.tiktok.com/@f4kee_news" target="_blank" class="social-btn tiktok">
+          <span class="social-icon">🎵</span>
+          <span>TikTok</span>
+        </a>
+      </div>
+      
+      <p style="margin-top: 40px; color: #64748b;">Hecho con 💡 para combatir la desinformación | 2025</p>
+    </div>
   </footer>
+
+  <style>
+  .footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .social-links {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-size: 1.1rem;
+  }
+
+  .social-btn.instagram {
+    background: linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #FCAF45 100%);
+    color: white;
+  }
+
+  .social-btn.tiktok {
+    background: linear-gradient(135deg, #000000 0%, #ee1d52 100%);
+    color: white;
+  }
+
+  .social-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255, 76, 76, 0.3);
+  }
+
+  .social-icon {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .social-links {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .social-btn {
+      width: 100%;
+      max-width: 300px;
+      justify-content: center;
+    }
+  }
+  </style>
+
 </body>
 </html>
