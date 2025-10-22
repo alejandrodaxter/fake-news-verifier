@@ -174,20 +174,60 @@ const response = await fetch(API_URL, {
           </ul>
         </div>
       `;
-    } else {
-      relatedDiv.innerHTML = `
-        <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
-          <h3 style="color: #facc15;">😕 Esta noticia aún no ha sido verificada</h3>
-          <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
-            Esto no significa que sea falsa, solo que aún no está en nuestras bases de datos.<br><br>
-            <strong style="color: #22c55e;">💡 Pero tranquilo, puedes verificarla manualmente en:</strong><br>
-            <a href="https://colombiacheck.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">ColombiaCheck</a> | 
-            <a href="https://chequeado.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Chequeado</a> | 
-            <a href="https://www.politifact.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Politifact</a>
-          </p>
-        </div>
-      `;
-    }
+    // Reemplaza el bloque "else" donde muestra "Esta noticia aún no ha sido verificada"
+// por este código que cambia el mensaje según el color del semáforo
+
+} else {
+  // Mensaje diferente según el nivel de confiabilidad
+  let noVerificationMessage = "";
+
+  if (evalRes.level === "ok") {
+    // VERDE - Fuente confiable pero sin verificaciones encontradas
+    noVerificationMessage = `
+      <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
+        <h3 style="color: #22c55e;">✅ Esta noticia aún no ha sido verificada</h3>
+        <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
+          Esto no significa que sea falsa, solo que aún no está en nuestras bases de datos.<br><br>
+          <strong style="color: #22c55e;">💡 Puedes verificarla manualmente en:</strong><br>
+          <a href="https://colombiacheck.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">ColombiaCheck</a> | 
+          <a href="https://chequeado.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Chequeado</a> | 
+          <a href="https://www.politifact.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Politifact</a>
+        </p>
+      </div>
+    `;
+  } else if (evalRes.level === "warn") {
+    // AMARILLO - Fuente dudosa
+    noVerificationMessage = `
+      <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
+        <h3 style="color: #facc15;">⚠️ Procede con precaución</h3>
+        <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
+          No encontramos verificaciones de fact-checkers profesionales sobre esta noticia.<br><br>
+          <strong style="color: #facc15;">💡 Antes de compartir, verifica en:</strong><br>
+          <a href="https://colombiacheck.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">ColombiaCheck</a> | 
+          <a href="https://chequeado.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Chequeado</a> | 
+          <a href="https://www.politifact.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">Politifact</a>
+        </p>
+      </div>
+    `;
+  } else {
+    // ROJO - Fuente sospechosa
+    noVerificationMessage = `
+      <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
+        <h3 style="color: #ef4444;">🚫 ALTO: Señales de riesgo detectadas</h3>
+        <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
+          Este sitio presenta características comunes en fake news.<br><br>
+          <strong style="color: #ef4444;">⚠️ Antes de creer o compartir, verifica en medios confiables:</strong><br>
+          <a href="https://www.eltiempo.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">El Tiempo</a> | 
+          <a href="https://www.elespectador.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">El Espectador</a> | 
+          <a href="https://www.bbc.com/mundo" target="_blank" style="color: #60a5fa; text-decoration: none;">BBC</a> | 
+          <a href="https://www.reuters.com/mundo" target="_blank" style="color: #60a5fa; text-decoration: none;">Reuters</a>
+        </p>
+      </div>
+    `;
+  }
+
+  relatedDiv.innerHTML = noVerificationMessage;
+}
 
   } catch (err) {
     console.error("Error llamando a la API:", err);
