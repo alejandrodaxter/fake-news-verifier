@@ -181,7 +181,7 @@ const response = await fetch(API_URL, {
   // Mensaje diferente según el nivel de confiabilidad
   let noVerificationMessage = "";
 
-  if (evalRes.level === "ok") {
+  if (data.level === "ok") {
     // VERDE - Fuente confiable pero sin verificaciones encontradas
     noVerificationMessage = `
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
@@ -195,7 +195,7 @@ const response = await fetch(API_URL, {
         </p>
       </div>
     `;
-  } else if (evalRes.level === "warn") {
+  } else if (data.level === "warn") {
     // AMARILLO - Fuente dudosa
     noVerificationMessage = `
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
