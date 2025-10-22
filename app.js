@@ -159,7 +159,7 @@ const response = await fetch(API_URL, {
     if (combined.length > 0) {
       relatedDiv.innerHTML = `
         <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
-          <h3 style="color: #22c55e; margin-bottom: 15px;">✅ Verificaciones encontradas:</h3>
+          <h3 style="color: #22c55e; margin-bottom: 15px;">🔍 Información adicional encontrada:</h3>
           <ul style="list-style: none; padding: 0;">
             ${combined.map(item => `
               <li style="margin-bottom: 15px; padding: 12px; background: #2a2d3a; border-radius: 8px;">
