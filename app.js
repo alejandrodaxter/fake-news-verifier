@@ -55,51 +55,51 @@ function renderResult(evalRes) {
   }
 
   let html = `
-    <div style="text-align: center; margin-bottom: 30px;">
-      <div style="
-        display: inline-block;
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        border: 8px solid ${scoreColor};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        margin-bottom: 20px;
-        background: rgba(255,255,255,0.05);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      ">
-        <div style="font-size: 48px; font-weight: bold; color: ${scoreColor};">
-          ${evalRes.score || 0}
-        </div>
-        <div style="font-size: 14px; color: ${scoreColor}; margin-top: 5px;">
-          / 100
-        </div>
+  <div style="text-align: center; margin-bottom: 30px;">
+    
+    <div style="
+      display: inline-flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px 40px;
+      background: linear-gradient(135deg, ${scoreColor}22, ${scoreColor}11);
+      border: 3px solid ${scoreColor};
+      border-radius: 60px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 32px ${scoreColor}44;
+    ">
+      <div style="font-size: 42px; line-height: 1;">
+        ${evalRes.level === "ok" ? "✓" : evalRes.level === "warn" ? "⚠" : "✗"}
       </div>
-      
-      <div style="
-        display: inline-block;
-        padding: 12px 24px;
-        background: ${scoreColor}22;
-        border: 2px solid ${scoreColor};
-        border-radius: 50px;
-        font-size: 20px;
-        font-weight: bold;
-        color: ${scoreColor};
-        text-transform: uppercase;
-        letter-spacing: 2px;
-      ">
-        ${scoreLabel}
+      <div>
+        <div style="
+          font-size: 28px;
+          font-weight: bold;
+          color: ${scoreColor};
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          line-height: 1.2;
+        ">
+          ${scoreLabel}
+        </div>
+        <div style="
+          font-size: 14px;
+          color: ${scoreColor};
+          opacity: 0.7;
+          margin-top: 5px;
+        ">
+          Confianza: ${evalRes.score}/100
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="traffic-light">
-      <div class="light red ${evalRes.level === "bad" ? "on" : ""}"></div>
-      <div class="light yellow ${evalRes.level === "warn" ? "on" : ""}"></div>
-      <div class="light green ${evalRes.level === "ok" ? "on" : ""}"></div>
-    </div>
-  `;
+  <div class="traffic-light">
+    <div class="light red ${evalRes.level === "bad" ? "on" : ""}"></div>
+    <div class="light yellow ${evalRes.level === "warn" ? "on" : ""}"></div>
+    <div class="light green ${evalRes.level === "ok" ? "on" : ""}"></div>
+  </div>
+`;
 
   if (evalRes.level === "ok") {
     html += `
