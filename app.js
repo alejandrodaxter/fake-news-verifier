@@ -30,33 +30,70 @@ const LOOKALIKES = [
 function renderResult(evalRes) {
   const resultado = document.getElementById("resultado");
   const detalles = document.getElementById("detalles");
-  const badge = document.getElementById("scoreBadge");
 
-  // Normalizar el nivel recibido
   evalRes.level = evalRes.level?.toLowerCase();
   if (evalRes.level === "harm") evalRes.level = "bad";
 
-  console.log("Nivel recibido:", evalRes.level);
-
-  // Asignar clase según nivel
   resultado.className = `resultado-${evalRes.level}`;
-  badge.className = "badge";
 
   const ocultar = [
-  "✅ Dominio en lista de medios confiables",
-  "🔒 Conexión segura (HTTPS)"
-];
+    "✅ Dominio en lista de medios confiables",
+    "🔒 Conexión segura (HTTPS)"
+  ];
+  const visibles = evalRes.reasons?.filter(r => !ocultar.includes(r)) || [];
 
-const visibles = evalRes.reasons?.filter(r => !ocultar.includes(r)) || [];
+  // 🆕 Score y label
+  let scoreColor = "#22c55e";
+  let scoreLabel = "CONFIABLE";
+  
+  if (evalRes.level === "warn") {
+    scoreColor = "#facc15";
+    scoreLabel = "DUDOSO";
+  } else if (evalRes.level === "bad") {
+    scoreColor = "#ef4444";
+    scoreLabel = "RIESGO";
+  }
 
-if (visibles.length > 0) {
-  detalles.innerHTML = "<ul>" + visibles.map(r => `<li>${r}</li>`).join("") + "</ul>";
-} else {
-  detalles.innerHTML = ""; // No deja espacio vacío
-}
-
-  // Semáforo visual
   let html = `
+    <div style="text-align: center; margin-bottom: 30px;">
+      <div style="
+        display: inline-block;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 8px solid ${scoreColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: rgba(255,255,255,0.05);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      ">
+        <div style="font-size: 48px; font-weight: bold; color: ${scoreColor};">
+          ${evalRes.score || 0}
+        </div>
+        <div style="font-size: 14px; color: ${scoreColor}; margin-top: 5px;">
+          / 100
+        </div>
+      </div>
+      
+      <div style="
+        display: inline-block;
+        padding: 12px 24px;
+        background: ${scoreColor}22;
+        border: 2px solid ${scoreColor};
+        border-radius: 50px;
+        font-size: 20px;
+        font-weight: bold;
+        color: ${scoreColor};
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      ">
+        ${scoreLabel}
+      </div>
+    </div>
+
     <div class="traffic-light">
       <div class="light red ${evalRes.level === "bad" ? "on" : ""}"></div>
       <div class="light yellow ${evalRes.level === "warn" ? "on" : ""}"></div>
@@ -64,31 +101,92 @@ if (visibles.length > 0) {
     </div>
   `;
 
-  // Mensaje según nivel
   if (evalRes.level === "ok") {
     html += `
-      <p>🟢 <strong>Confiable</strong><br>
-      Fuente verificada.<br>
-      Todo indica que la información proviene de un medio confiable.<br>
-      Puedes leer y compartir con tranquilidad.</p>
+      <div style="
+        background: linear-gradient(135deg, #22c55e22, #10b98122);
+        padding: 25px;
+        border-radius: 16px;
+        border-left: 4px solid #22c55e;
+        margin-top: 20px;
+      ">
+        <h3 style="color: #22c55e; margin: 0 0 15px 0; font-size: 24px;">
+          🟢 Fuente Confiable
+        </h3>
+        <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
+          <strong>Todo indica que esta información proviene de un medio verificado.</strong><br>
+          Puedes leer y compartir con tranquilidad.
+        </p>
+      </div>
     `;
   } else if (evalRes.level === "warn") {
     html += `
-      <p>🟡 <strong>Dudoso</strong><br>
-      Fuente dudosa.<br>
-      La información podría ser real, pero conviene contrastarla con otros medios.<br>
-      Lee con cautela.</p>
+      <div style="
+        background: linear-gradient(135deg, #facc1522, #f59e0b22);
+        padding: 25px;
+        border-radius: 16px;
+        border-left: 4px solid #facc15;
+        margin-top: 20px;
+      ">
+        <h3 style="color: #facc15; margin: 0 0 15px 0; font-size: 24px;">
+          🟡 Fuente Dudosa
+        </h3>
+        <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
+          <strong>La información podría ser real, pero conviene contrastarla.</strong><br>
+          Verifica en otros medios antes de compartir.
+        </p>
+      </div>
     `;
   } else {
     html += `
-      <p>🔴 <strong>Falso</strong><br>
-      Fuente no verificada.<br>
-      Alta posibilidad de contenido falso o engañoso.<br>
-      No compartas sin confirmar en medios confiables.</p>
+      <div style="
+        background: linear-gradient(135deg, #ef444422, #dc262622);
+        padding: 25px;
+        border-radius: 16px;
+        border-left: 4px solid #ef4444;
+        margin-top: 20px;
+      ">
+        <h3 style="color: #ef4444; margin: 0 0 15px 0; font-size: 24px;">
+          🔴 Fuente No Verificada
+        </h3>
+        <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
+          <strong>Alta posibilidad de contenido falso o engañoso.</strong><br>
+          NO compartas sin confirmar en medios confiables.
+        </p>
+      </div>
     `;
   }
 
   resultado.innerHTML = html;
+
+  if (visibles.length > 0) {
+    detalles.innerHTML = `
+      <div style="
+        background: #1a1d29;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+      ">
+        <h4 style="color: #60a5fa; margin-bottom: 15px;">
+          🔍 Factores detectados:
+        </h4>
+        <ul style="
+          list-style: none;
+          padding: 0;
+          color: #cbd5e1;
+          line-height: 2;
+        ">
+          ${visibles.map(r => `
+            <li style="padding: 8px 0; border-bottom: 1px solid #2a2d3a;">
+              ${r}
+            </li>
+          `).join("")}
+        </ul>
+      </div>
+    `;
+  } else {
+    detalles.innerHTML = "";
+  }
 }
 
 async function verificar() {
@@ -99,9 +197,44 @@ async function verificar() {
     return;
   }
 
-  // Mostrar indicador de carga
+  // 🆕 Barra de progreso animada
   const resultado = document.getElementById("resultado");
-  resultado.innerHTML = "<p>🔍 Verificando la URL...</p>";
+  resultado.innerHTML = `
+    <div style="text-align: center; padding: 40px 20px;">
+      <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+      <h3 style="color: #60a5fa; margin-bottom: 20px;">
+        Analizando la URL...
+      </h3>
+      
+      <div style="
+        width: 100%;
+        height: 8px;
+        background: #2a2d3a;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 15px;
+      ">
+        <div style="
+          width: 0%;
+          height: 100%;
+          background: linear-gradient(90deg, #60a5fa, #a78bfa);
+          border-radius: 10px;
+          animation: progress 2s ease-in-out forwards;
+        "></div>
+      </div>
+      
+      <p style="color: #94a3b8; font-size: 14px;">
+        Consultando múltiples fuentes de verificación...
+      </p>
+    </div>
+    
+    <style>
+      @keyframes progress {
+        from { width: 0%; }
+        to { width: 90%; }
+      }
+    </style>
+  `;
   
   const relatedDiv = document.getElementById("corroborations");
   relatedDiv.innerHTML = "";

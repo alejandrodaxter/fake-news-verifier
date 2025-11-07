@@ -74,3 +74,38 @@ body { font-family: Arial, sans-serif; }
 .resultado-bad p {
   color: #ef4444; /* rojo */
 }
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resultado-ok, .resultado-warn, .resultado-bad {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Hover en botón */
+#btnVerificar {
+  transition: all 0.3s ease;
+}
+
+#btnVerificar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+#btnVerificar:active {
+  transform: translateY(0);
+}
+
+/* Glow en semáforo */
+.light.on {
+  box-shadow: 0 0 20px currentColor;
+  transition: box-shadow 0.3s ease;
+}
