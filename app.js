@@ -82,14 +82,7 @@ function renderResult(evalRes) {
         ">
           ${scoreLabel}
         </div>
-        <div style="
-          font-size: 14px;
-          color: ${scoreColor};
-          opacity: 0.7;
-          margin-top: 5px;
-        ">
-          Confianza: ${evalRes.score}/100
-        </div>
+        
       </div>
     </div>
   </div>
@@ -111,8 +104,8 @@ function renderResult(evalRes) {
         margin-top: 20px;
       ">
         <h3 style="color: #22c55e; margin: 0 0 15px 0; font-size: 24px;">
-          🟢 Fuente Confiable
-        </h3>
+        ⚠️ Recomendaciones
+       </h3>
         <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
           <strong>Todo indica que esta información proviene de un medio verificado.</strong><br>
           Puedes leer y compartir con tranquilidad.
@@ -129,8 +122,8 @@ function renderResult(evalRes) {
         margin-top: 20px;
       ">
         <h3 style="color: #facc15; margin: 0 0 15px 0; font-size: 24px;">
-          🟡 Fuente Dudosa
-        </h3>
+      ⚠️ Recomendaciones
+      </h3>
         <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
           <strong>La información podría ser real, pero conviene contrastarla.</strong><br>
           Verifica en otros medios antes de compartir.
@@ -147,8 +140,8 @@ function renderResult(evalRes) {
         margin-top: 20px;
       ">
         <h3 style="color: #ef4444; margin: 0 0 15px 0; font-size: 24px;">
-          🔴 Fuente No Verificada
-        </h3>
+      ⚠️ Recomendaciones
+         </h3>
         <p style="color: #94a3b8; line-height: 1.8; margin: 0;">
           <strong>Alta posibilidad de contenido falso o engañoso.</strong><br>
           NO compartas sin confirmar en medios confiables.
