@@ -1,22 +1,22 @@
 // Lista blanca de medios confiables
 const TRUSTED = [
-  "bbc.com","nytimes.com","elpais.com","reuters.com","apnews.com",
-  "dw.com","eltiempo.com","elespectador.com","semana.com","theguardian.com",
-  "washingtonpost.com","lemonde.fr","aljazeera.com","infobae.com",
-  "rcnradio.com","caracol.com.co","noticias.caracoltv.com","lasillavacia.com",
-  "elcolombiano.com","portafolio.co"
+  "bbc.com", "nytimes.com", "elpais.com", "reuters.com", "apnews.com",
+  "dw.com", "eltiempo.com", "elespectador.com", "semana.com", "theguardian.com",
+  "washingtonpost.com", "lemonde.fr", "aljazeera.com", "infobae.com",
+  "rcnradio.com", "caracol.com.co", "noticias.caracoltv.com", "lasillavacia.com",
+  "elcolombiano.com", "portafolio.co"
 ];
 
 // TLD potencialmente riesgosos
-const RISKY_TLDS = [".xyz",".click",".buzz",".top",".loan",".info",".club",".work",".tk",".gq",".ml"];
+const RISKY_TLDS = [".xyz", ".click", ".buzz", ".top", ".loan", ".info", ".club", ".work", ".tk", ".gq", ".ml"];
 
 // Acortadores (lista gris: requieren expandir)
-const SHORTENERS = ["bit.ly","t.co","tinyurl.com","goo.gl","ow.ly","is.gd","buff.ly","rb.gy"];
+const SHORTENERS = ["bit.ly", "t.co", "tinyurl.com", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rb.gy"];
 
 // Palabras/expresiones de clickbait comunes en el slug/ruta
 const CLICKBAIT = [
-  /incre[ií]ble/i,/no lo (vas|vas a) creer/i,/impactante/i,/urgente/i,/secreto/i,
-  /esc[áa]ndalo/i,/pol[ée]mica/i,/imperdible/i,/as[ií] fue/i,/lo que nadie/i
+  /incre[ií]ble/i, /no lo (vas|vas a) creer/i, /impactante/i, /urgente/i, /secreto/i,
+  /esc[áa]ndalo/i, /pol[ée]mica/i, /imperdible/i, /as[ií] fue/i, /lo que nadie/i
 ];
 
 // Confusiones de dominio (typosquatting básico)
@@ -45,7 +45,7 @@ function renderResult(evalRes) {
   // 🆕 Score y label
   let scoreColor = "#22c55e";
   let scoreLabel = "CONFIABLE";
-  
+
   if (evalRes.level === "warn") {
     scoreColor = "#facc15";
     scoreLabel = "DUDOSO";
@@ -184,7 +184,7 @@ function renderResult(evalRes) {
 
 async function verificar() {
   const input = document.getElementById("inputUrl").value.trim();
-  
+
   if (!input) {
     alert("Por favor ingresa una URL");
     return;
@@ -228,17 +228,17 @@ async function verificar() {
       }
     </style>
   `;
-  
+
   const relatedDiv = document.getElementById("corroborations");
   relatedDiv.innerHTML = "";
 
   try {
     // Detectar automáticamente si es Netlify o Vercel
-const API_URL = window.location.hostname.includes('netlify') 
-  ? '/.netlify/functions/verify' 
-  : '/api/verify';
+    const API_URL = window.location.hostname.includes('netlify')
+      ? '/.netlify/functions/verify'
+      : '/api/verify';
 
-const response = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: input })
@@ -302,16 +302,16 @@ const response = await fetch(API_URL, {
           </ul>
         </div>
       `;
-    // Reemplaza el bloque "else" donde muestra "Esta noticia aún no ha sido verificada"
-// por este código que cambia el mensaje según el color del semáforo
+      // Reemplaza el bloque "else" donde muestra "Esta noticia aún no ha sido verificada"
+      // por este código que cambia el mensaje según el color del semáforo
 
-} else {
-  // Mensaje diferente según el nivel de confiabilidad
-  let noVerificationMessage = "";
+    } else {
+      // Mensaje diferente según el nivel de confiabilidad
+      let noVerificationMessage = "";
 
-  if (data.level === "ok") {
-    // VERDE - Fuente confiable pero sin verificaciones encontradas
-    noVerificationMessage = `
+      if (data.level === "ok") {
+        // VERDE - Fuente confiable pero sin verificaciones encontradas
+        noVerificationMessage = `
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
         <h3 style="color: #22c55e;">✅ Esta noticia aún no ha sido verificada</h3>
         <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
@@ -323,9 +323,9 @@ const response = await fetch(API_URL, {
         </p>
       </div>
     `;
-  } else if (data.level === "warn") {
-    // AMARILLO - Fuente dudosa
-    noVerificationMessage = `
+      } else if (data.level === "warn") {
+        // AMARILLO - Fuente dudosa
+        noVerificationMessage = `
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
         <h3 style="color: #facc15;">⚠️ Procede con precaución</h3>
         <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
@@ -337,9 +337,9 @@ const response = await fetch(API_URL, {
         </p>
       </div>
     `;
-  } else {
-    // ROJO - Fuente sospechosa
-    noVerificationMessage = `
+      } else {
+        // ROJO - Fuente sospechosa
+        noVerificationMessage = `
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
         <h3 style="color: #ef4444;">🚫 ALTO: Señales de riesgo detectadas</h3>
         <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
@@ -352,10 +352,10 @@ const response = await fetch(API_URL, {
         </p>
       </div>
     `;
-  }
+      }
 
-  relatedDiv.innerHTML = noVerificationMessage;
-}
+      relatedDiv.innerHTML = noVerificationMessage;
+    }
 
   } catch (err) {
     console.error("Error llamando a la API:", err);
@@ -368,7 +368,10 @@ const response = await fetch(API_URL, {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnVerificar").addEventListener("click", verificar);
-  
+  // Cargar historial al iniciar
+  displayHistory();
+  updateStats();
+
   // Permitir verificar con Enter
   document.getElementById("inputUrl").addEventListener("keypress", (e) => {
     if (e.key === "Enter") verificar();
@@ -378,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function saveToHistory(url, result) {
   let history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
-  
+
   // Agregar nueva verificación
   history.unshift({
     url: url,
@@ -387,12 +390,12 @@ function saveToHistory(url, result) {
     date: new Date().toISOString(),
     hostname: result.hostname
   });
-  
+
   // Mantener solo las últimas 20
   history = history.slice(0, 20);
-  
+
   localStorage.setItem('fakeNewsHistory', JSON.stringify(history));
-  
+
   // Actualizar display
   displayHistory();
   updateStats();
@@ -401,26 +404,26 @@ function saveToHistory(url, result) {
 function displayHistory() {
   const historyDiv = document.getElementById('history');
   if (!historyDiv) return;
-  
+
   const history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
-  
+
   if (history.length === 0) {
     historyDiv.innerHTML = '';
     return;
   }
-  
+
   const levelEmoji = {
     ok: '✅',
     warn: '⚠️',
     bad: '❌'
   };
-  
+
   const levelColor = {
     ok: '#22c55e',
     warn: '#facc15',
     bad: '#ef4444'
   };
-  
+
   historyDiv.innerHTML = `
     <div style="
       background: #1a1d29;
@@ -454,79 +457,113 @@ function displayHistory() {
       </div>
       
       <div style="
-        max-height: 400px;
+        max-height: 300px;
         overflow-y: auto;
+        overflow-x: hidden;
       ">
-        ${history.map((item, index) => `
-          <div
-            onclick="document.getElementById('inputUrl').value='${item.url}'; verificar();"
-            style="
-              background: #2a2d3a;
-              padding: 15px;
-              border-radius: 12px;
-              margin-bottom: 10px;
-              cursor: pointer;
-              border-left: 4px solid ${levelColor[item.level]};
-              transition: transform 0.2s, box-shadow 0.2s;
-            "
-            onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
-            onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none';"
-          >
-            <div style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 8px;
-            ">
-              <span style="
-                font-size: 20px;
-                margin-right: 10px;
-              ">${levelEmoji[item.level]}</span>
-              <span style="
-                color: #cbd5e1;
-                flex: 1;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-weight: 500;
-              ">${item.hostname || item.url}</span>
-              <span style="
-                color: #64748b;
-                font-size: 12px;
-                margin-left: 10px;
-              ">${new Date(item.date).toLocaleDateString('es-CO')}</span>
-            </div>
-            <div style="
-              color: #64748b;
-              font-size: 12px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            ">${item.url}</div>
-          </div>
-        `).join('')}
-      </div>
+        <div style="
+  background: #2a2d3a;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid ${levelColor[item.level]};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+">
+  <div style="flex: 1; min-width: 0;">
+    <div style="
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    ">
+      <span style="font-size: 20px; margin-right: 10px;">
+        ${levelEmoji[item.level]}
+      </span>
+      <span style="
+        color: #cbd5e1;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+      ">${item.hostname || item.url}</span>
+      <span style="
+        color: #64748b;
+        font-size: 12px;
+        margin-left: 10px;
+      ">${new Date(item.date).toLocaleDateString('es-CO')}</span>
     </div>
+    <div style="
+      color: #64748b;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    ">${item.url}</div>
+  </div>
+  
+  <!-- Botones de acción -->
+  <div style="display: flex; gap: 8px; flex-shrink: 0;">
+    <button
+      onclick="window.open('${item.url}', '_blank')"
+      style="
+        background: #3b82f622;
+        color: #3b82f6;
+        border: 1px solid #3b82f6;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+      "
+      onmouseover="this.style.background='#3b82f644'"
+      onmouseout="this.style.background='#3b82f622'"
+    >
+      🔗 Abrir
+    </button>
+    <button 
+      onclick="document.getElementById('inputUrl').value='${item.url}'; window.scrollTo(0,0); verificar();"
+      style="
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #475569;
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        white-space: nowrap;
+      "
+      onmouseover="this.style.borderColor='#22c55e'; this.style.color='#22c55e'"
+      onmouseout="this.style.borderColor='#475569'; this.style.color='#64748b'"
+      title="Re-verificar esta URL"
+    >
+      🔄
+    </button>
+  </div>
+</div>
   `;
 }
 
 function updateStats() {
   const statsDiv = document.getElementById('stats');
   if (!statsDiv) return;
-  
+
   const history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
-  
+
   if (history.length === 0) {
     statsDiv.innerHTML = '';
     return;
   }
-  
+
   const stats = {
     ok: history.filter(h => h.level === 'ok').length,
     warn: history.filter(h => h.level === 'warn').length,
     bad: history.filter(h => h.level === 'bad').length
   };
-  
+
   statsDiv.innerHTML = `
     <div style="
       background: linear-gradient(135deg, #1e293b, #334155);
