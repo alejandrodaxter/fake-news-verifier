@@ -404,26 +404,26 @@ function saveToHistory(url, result) {
 function displayHistory() {
   const historyDiv = document.getElementById('history');
   if (!historyDiv) return;
-
+  
   const history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
-
+  
   if (history.length === 0) {
     historyDiv.innerHTML = '';
     return;
   }
-
+  
   const levelEmoji = {
     ok: '✅',
     warn: '⚠️',
     bad: '❌'
   };
-
+  
   const levelColor = {
     ok: '#22c55e',
     warn: '#facc15',
     bad: '#ef4444'
   };
-
+  
   historyDiv.innerHTML = `
     <div style="
       background: #1a1d29;
@@ -461,89 +461,92 @@ function displayHistory() {
         overflow-y: auto;
         overflow-x: hidden;
       ">
-        <div style="
-  background: #2a2d3a;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  border-left: 4px solid ${levelColor[item.level]};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-">
-  <div style="flex: 1; min-width: 0;">
-    <div style="
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-    ">
-      <span style="font-size: 20px; margin-right: 10px;">
-        ${levelEmoji[item.level]}
-      </span>
-      <span style="
-        color: #cbd5e1;
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 500;
-      ">${item.hostname || item.url}</span>
-      <span style="
-        color: #64748b;
-        font-size: 12px;
-        margin-left: 10px;
-      ">${new Date(item.date).toLocaleDateString('es-CO')}</span>
+        ${history.map((item, index) => `
+          <div style="
+            background: #2a2d3a;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid ${levelColor[item.level]};
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+          ">
+            <div style="flex: 1; min-width: 0;">
+              <div style="
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+              ">
+                <span style="font-size: 20px; margin-right: 10px;">
+                  ${levelEmoji[item.level]}
+                </span>
+                <span style="
+                  color: #cbd5e1;
+                  flex: 1;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                  font-weight: 500;
+                ">${item.hostname || item.url}</span>
+                <span style="
+                  color: #64748b;
+                  font-size: 12px;
+                  margin-left: 10px;
+                ">${new Date(item.date).toLocaleDateString('es-CO')}</span>
+              </div>
+              <div style="
+                color: #64748b;
+                font-size: 12px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              ">${item.url}</div>
+            </div>
+            
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+              <button
+                onclick="window.open('${item.url}', '_blank')"
+                style="
+                  background: #3b82f622;
+                  color: #3b82f6;
+                  border: 1px solid #3b82f6;
+                  padding: 8px 16px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  font-size: 13px;
+                  font-weight: 500;
+                  white-space: nowrap;
+                "
+                onmouseover="this.style.background='#3b82f644'"
+                onmouseout="this.style.background='#3b82f622'"
+              >
+                🔗 Abrir
+              </button>
+              <button 
+                onclick="document.getElementById('inputUrl').value='${item.url}'; window.scrollTo(0,0); verificar();"
+                style="
+                  background: transparent;
+                  color: #64748b;
+                  border: 1px solid #475569;
+                  padding: 8px 10px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  white-space: nowrap;
+                "
+                onmouseover="this.style.borderColor='#22c55e'; this.style.color='#22c55e'"
+                onmouseout="this.style.borderColor='#475569'; this.style.color='#64748b'"
+                title="Re-verificar esta URL"
+              >
+                🔄
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
-    <div style="
-      color: #64748b;
-      font-size: 12px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    ">${item.url}</div>
-  </div>
-  
-  <!-- Botones de acción -->
-  <div style="display: flex; gap: 8px; flex-shrink: 0;">
-    <button
-      onclick="window.open('${item.url}', '_blank')"
-      style="
-        background: #3b82f622;
-        color: #3b82f6;
-        border: 1px solid #3b82f6;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        white-space: nowrap;
-      "
-      onmouseover="this.style.background='#3b82f644'"
-      onmouseout="this.style.background='#3b82f622'"
-    >
-      🔗 Abrir
-    </button>
-    <button 
-      onclick="document.getElementById('inputUrl').value='${item.url}'; window.scrollTo(0,0); verificar();"
-      style="
-        background: transparent;
-        color: #64748b;
-        border: 1px solid #475569;
-        padding: 8px 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        white-space: nowrap;
-      "
-      onmouseover="this.style.borderColor='#22c55e'; this.style.color='#22c55e'"
-      onmouseout="this.style.borderColor='#475569'; this.style.color='#64748b'"
-      title="Re-verificar esta URL"
-    >
-      🔄
-    </button>
-  </div>
-</div>
   `;
 }
 
