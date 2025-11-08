@@ -252,6 +252,8 @@ const response = await fetch(API_URL, {
 
     // Renderizar resultado principal
     renderResult(data);
+    // Guardar en historial
+    saveToHistory(input, data);
 
     // 🔹 Unificar fact-checks (Google) y corroboraciones (NewsAPI)
     const combined = [];
@@ -341,7 +343,7 @@ const response = await fetch(API_URL, {
       <div style="background: #1a1d29; padding: 20px; border-radius: 12px; margin-top: 20px;">
         <h3 style="color: #ef4444;">🚫 ALTO: Señales de riesgo detectadas</h3>
         <p style="color: #94a3b8; line-height: 1.6; margin-top: 15px;">
-          Este sitio presenta características comunes en fake news.<br><br>
+          Este sitio presenta características comunes en noticias falsas.<br><br>
           <strong style="color: #ef4444;">⚠️ Antes de creer o compartir, verifica en medios confiables:</strong><br>
           <a href="https://www.eltiempo.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">El Tiempo</a> | 
           <a href="https://www.elespectador.com/" target="_blank" style="color: #60a5fa; text-decoration: none;">El Espectador</a> | 
@@ -372,3 +374,238 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Enter") verificar();
   });
 });
+// ===== HISTORIAL DE VERIFICACIONES =====
+
+function saveToHistory(url, result) {
+  let history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
+  
+  // Agregar nueva verificación
+  history.unshift({
+    url: url,
+    level: result.level,
+    score: result.score,
+    date: new Date().toISOString(),
+    hostname: result.hostname
+  });
+  
+  // Mantener solo las últimas 20
+  history = history.slice(0, 20);
+  
+  localStorage.setItem('fakeNewsHistory', JSON.stringify(history));
+  
+  // Actualizar display
+  displayHistory();
+  updateStats();
+}
+
+function displayHistory() {
+  const historyDiv = document.getElementById('history');
+  if (!historyDiv) return;
+  
+  const history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
+  
+  if (history.length === 0) {
+    historyDiv.innerHTML = '';
+    return;
+  }
+  
+  const levelEmoji = {
+    ok: '✅',
+    warn: '⚠️',
+    bad: '❌'
+  };
+  
+  const levelColor = {
+    ok: '#22c55e',
+    warn: '#facc15',
+    bad: '#ef4444'
+  };
+  
+  historyDiv.innerHTML = `
+    <div style="
+      background: #1a1d29;
+      padding: 25px;
+      border-radius: 16px;
+      margin-top: 30px;
+    ">
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      ">
+        <h3 style="color: #60a5fa; margin: 0;">
+          📋 Historial de verificaciones
+        </h3>
+        <button
+          onclick="clearHistory()"
+          style="
+            background: #ef444422;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+          "
+        >
+          Limpiar
+        </button>
+      </div>
+      
+      <div style="
+        max-height: 400px;
+        overflow-y: auto;
+      ">
+        ${history.map((item, index) => `
+          <div
+            onclick="document.getElementById('inputUrl').value='${item.url}'; verificar();"
+            style="
+              background: #2a2d3a;
+              padding: 15px;
+              border-radius: 12px;
+              margin-bottom: 10px;
+              cursor: pointer;
+              border-left: 4px solid ${levelColor[item.level]};
+              transition: transform 0.2s, box-shadow 0.2s;
+            "
+            onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
+            onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none';"
+          >
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 8px;
+            ">
+              <span style="
+                font-size: 20px;
+                margin-right: 10px;
+              ">${levelEmoji[item.level]}</span>
+              <span style="
+                color: #cbd5e1;
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 500;
+              ">${item.hostname || item.url}</span>
+              <span style="
+                color: #64748b;
+                font-size: 12px;
+                margin-left: 10px;
+              ">${new Date(item.date).toLocaleDateString('es-CO')}</span>
+            </div>
+            <div style="
+              color: #64748b;
+              font-size: 12px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            ">${item.url}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function updateStats() {
+  const statsDiv = document.getElementById('stats');
+  if (!statsDiv) return;
+  
+  const history = JSON.parse(localStorage.getItem('fakeNewsHistory') || '[]');
+  
+  if (history.length === 0) {
+    statsDiv.innerHTML = '';
+    return;
+  }
+  
+  const stats = {
+    ok: history.filter(h => h.level === 'ok').length,
+    warn: history.filter(h => h.level === 'warn').length,
+    bad: history.filter(h => h.level === 'bad').length
+  };
+  
+  statsDiv.innerHTML = `
+    <div style="
+      background: linear-gradient(135deg, #1e293b, #334155);
+      padding: 25px;
+      border-radius: 16px;
+      margin-top: 20px;
+    ">
+      <h3 style="color: #60a5fa; margin: 0 0 20px 0;">
+        📊 Tus estadísticas
+      </h3>
+      
+      <div style="
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+      ">
+        <div style="
+          background: #22c55e22;
+          border: 2px solid #22c55e;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        ">
+          <div style="font-size: 36px; font-weight: bold; color: #22c55e;">
+            ${stats.ok}
+          </div>
+          <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+            Confiables
+          </div>
+        </div>
+        
+        <div style="
+          background: #facc1522;
+          border: 2px solid #facc15;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        ">
+          <div style="font-size: 36px; font-weight: bold; color: #facc15;">
+            ${stats.warn}
+          </div>
+          <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+            Dudosas
+          </div>
+        </div>
+        
+        <div style="
+          background: #ef444422;
+          border: 2px solid #ef4444;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        ">
+          <div style="font-size: 36px; font-weight: bold; color: #ef4444;">
+            ${stats.bad}
+          </div>
+          <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+            Falsas
+          </div>
+        </div>
+      </div>
+      
+      <div style="
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #334155;
+        text-align: center;
+        color: #94a3b8;
+      ">
+        Total verificadas: <strong style="color: #60a5fa;">${history.length}</strong>
+      </div>
+    </div>
+  `;
+}
+
+function clearHistory() {
+  if (confirm('¿Estás seguro de que quieres borrar el historial?')) {
+    localStorage.removeItem('fakeNewsHistory');
+    displayHistory();
+    updateStats();
+  }
+}
