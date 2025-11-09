@@ -150,7 +150,7 @@ export default async function handler(req, res) {
 }
 
 async function sendTelegramMessage(chatId, text, parseMode = null) {
-  const TELEGRAM_TOKEN = '8517888603:AAGxap1Qw9JCnQhShuCaW4HsqRPmTUoW19M';
+  const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
   const body = {
