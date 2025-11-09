@@ -150,6 +150,44 @@ function renderResult(evalRes) {
     `;
   }
 
+  // Agregar botón de reporte
+html += `
+  <div style="
+    background: #1a1d29;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    text-align: center;
+  ">
+    <h4 style="color: #60a5fa; margin-bottom: 15px;">
+      🚨 ¿Esta noticia te parece falsa?
+    </h4>
+    <button
+      id="btnReportar"
+      onclick="reportarURL('${evalRes.hostname || document.getElementById('inputUrl').value}')"
+      style="
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      "
+      onmouseover="this.style.transform='scale(1.05)'"
+      onmouseout="this.style.transform='scale(1)'"
+    >
+      Reportar como falsa
+    </button>
+    <div id="reportStatus" style="
+      margin-top: 15px;
+      color: #94a3b8;
+      font-size: 14px;
+    "></div>
+  </div>
+`;
   resultado.innerHTML = html;
 
   if (visibles.length > 0) {
@@ -252,6 +290,8 @@ async function verificar() {
 
     // Renderizar resultado principal
     renderResult(data);
+    // Mostrar reportes existentes
+    mostrarReportes(input);
     // Guardar en historial
     saveToHistory(input, data);
 
@@ -647,5 +687,75 @@ function clearHistory() {
     localStorage.removeItem('fakeNewsHistory');
     displayHistory();
     updateStats();
+  }
+}
+
+// ===== SISTEMA DE REPORTES =====
+
+async function reportarURL(url) {
+  const btn = document.getElementById('btnReportar');
+  const status = document.getElementById('reportStatus');
+  
+  // Obtener la URL completa del input
+  const fullUrl = document.getElementById('inputUrl').value.trim();
+  
+  btn.disabled = true;
+  btn.textContent = 'Reportando...';
+  
+  try {
+    const response = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: fullUrl })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      btn.textContent = '✅ Reportado';
+      btn.style.background = '#22c55e';
+      status.innerHTML = `
+        <strong style="color: #22c55e;">¡Gracias por tu reporte!</strong><br>
+        ${data.totalReports} persona${data.totalReports > 1 ? 's han' : ' ha'} reportado esta URL
+      `;
+      
+      // Deshabilitar botón permanentemente
+      setTimeout(() => {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+      }, 2000);
+    } else {
+      throw new Error('Error al reportar');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    btn.textContent = 'Error al reportar';
+    btn.style.background = '#ef4444';
+    status.innerHTML = '<span style="color: #ef4444;">Hubo un error. Intenta de nuevo.</span>';
+    btn.disabled = false;
+    
+    setTimeout(() => {
+      btn.textContent = 'Reportar como falsa';
+    }, 3000);
+  }
+}
+
+async function mostrarReportes(url) {
+  try {
+    const response = await fetch(`/api/get-reports?url=${encodeURIComponent(url)}`);
+    const data = await response.json();
+    
+    if (data.reports > 0) {
+      const reportDiv = document.getElementById('reportStatus');
+      if (reportDiv) {
+        reportDiv.innerHTML = `
+          ⚠️ <strong>${data.reports}</strong> persona${data.reports > 1 ? 's han' : ' ha'} reportado esta URL como falsa
+        `;
+        reportDiv.style.color = '#facc15';
+      }
+    }
+  } catch (error) {
+    console.error('Error al obtener reportes:', error);
   }
 }
