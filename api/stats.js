@@ -14,38 +14,37 @@ export default async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY
     );
 
-    // Contar total de reportes
-    const { count: totalReports } = await supabase
+    // Total de verificaciones
+    const { count: totalVerificaciones } = await supabase
+      .from('verifications')
+      .select('*', { count: 'exact', head: true });
+
+    // Total de reportes
+    const { count: totalReportes } = await supabase
       .from('reports')
       .select('*', { count: 'exact', head: true });
 
-    // Contar URLs únicas reportadas
-    const { data: uniqueUrls } = await supabase
-      .from('reports')
-      .select('url');
+    // Usuarios únicos (por IP)
+    const { data: uniqueIPs } = await supabase
+      .from('verifications')
+      .select('user_ip');
 
-    const uniqueCount = uniqueUrls 
-      ? new Set(uniqueUrls.map(r => r.url)).size 
+    const usuariosUnicos = uniqueIPs 
+      ? new Set(uniqueIPs.map(v => v.user_ip)).size 
       : 0;
 
-   // Calcular verificaciones totales (aproximación basada en reportes)
-    const verificacionesTotales = (totalReports || 0) * 15 + 127;
-    const usuariosActivos = Math.floor(verificacionesTotales / 8) || 25;
-
     return res.status(200).json({
-      totalVerificaciones: verificacionesTotales || 127,
-      totalReportes: totalReports || 0,
-      urlsUnicas: uniqueCount || 0,
-      usuariosActivos: Math.floor(verificacionesTotales / 5) || 25
+      totalVerificaciones: totalVerificaciones || 0,
+      totalReportes: totalReportes || 0,
+      usuariosActivos: usuariosUnicos || 0
     });
 
   } catch (error) {
     console.error('Error en /api/stats:', error);
     return res.status(200).json({
-      totalVerificaciones: 127,
+      totalVerificaciones: 0,
       totalReportes: 0,
-      urlsUnicas: 0,
-      usuariosActivos: 25
+      usuariosActivos: 0
     });
   }
 }

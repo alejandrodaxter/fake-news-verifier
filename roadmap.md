@@ -12,18 +12,23 @@
 
 ## 🔨 En progreso
 
-### Día 2: Bot de WhatsApp (10 Nov 2024)
-- [ ] Configurar cuenta Twilio
-- [ ] Crear endpoint `/api/whatsapp`
-- [ ] Integrar verificador con bot
-- [ ] Probar envío/recepción de mensajes
-- [ ] Formato optimizado para móvil
+### Día 2: Bot de Telegram (10 Nov 2024)
+- [x] Configurar bot con BotFather
+- [x] Crear endpoint `/api/telegram.js`
+- [x] Integrar con verificador backend
+- [x] Comandos: /start, /help, /stats
+- [x] Verificación de URLs en tiempo real
+- [x] Formato profesional con emojis y Markdown
+- [x] Variables de entorno seguras
+- **Bot:** @FakeNews_verificador_bot
+- **Features:** Responde en <10seg, análisis completo, recomendaciones
+--// Needs an upgrade
 
 ## 📅 Próximos
 
 ### Día 3: Sistema de Reportes (11 Nov 2024)
 - [ ] Base de datos (Supabase)
-- [ ] Botón "Reportar como falsa"
+- [ ] Botón "Reportar como falsa" - Como hacer si reportan real como falsa?
 - [ ] Contador de reportes
 - [ ] Mostrar URLs más reportadas
 
@@ -52,7 +57,7 @@
 
 ## 📊 Métricas actuales
 
-- **Commits:** X
+- **Commits:** 6
 - **Features:** 5
 - **Líneas de código:** ~500
 - **APIs integradas:** 2 (Google Fact Check, NewsAPI)
