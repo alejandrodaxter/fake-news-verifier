@@ -759,3 +759,69 @@ async function mostrarReportes(url) {
     console.error('Error al obtener reportes:', error);
   }
 }
+// ===== ESTADÍSTICAS GLOBALES =====
+
+async function loadGlobalStats() {
+  try {
+    const response = await fetch('/api/stats');
+    const data = await response.json();
+    
+    const statsDiv = document.getElementById('globalStats');
+    if (!statsDiv) return;
+    
+    statsDiv.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #3b82f622, #2563eb22);
+        border: 2px solid #3b82f6;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      ">
+        <div style="font-size: 32px; font-weight: bold; color: #3b82f6;">
+          ${data.totalVerificaciones.toLocaleString()}
+        </div>
+        <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+          🔍 Verificaciones
+        </div>
+      </div>
+      
+      <div style="
+        background: linear-gradient(135deg, #22c55e22, #16a34a22);
+        border: 2px solid #22c55e;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      ">
+        <div style="font-size: 32px; font-weight: bold; color: #22c55e;">
+          ${data.usuariosActivos}
+        </div>
+        <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+          👥 Usuarios
+        </div>
+      </div>
+      
+      <div style="
+        background: linear-gradient(135deg, #ef444422, #dc262622);
+        border: 2px solid #ef4444;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      ">
+        <div style="font-size: 32px; font-weight: bold; color: #ef4444;">
+          ${data.totalReportes}
+        </div>
+        <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
+          🚫 Reportes
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error cargando estadísticas:', error);
+  }
+}
+
+// Cargar stats al iniciar
+document.addEventListener("DOMContentLoaded", () => {
+  loadGlobalStats();
+  // ... resto del código existente
+});
