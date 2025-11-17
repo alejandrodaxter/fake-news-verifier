@@ -236,6 +236,28 @@ export default async function handler(req, res) {
     }
   }
 
+  // 🆕 Guardar verificación en Supabase
+try {
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
+  
+  const userIp = req.headers['x-forwarded-for']?.split(',')[0] || 
+                 req.headers['x-real-ip'] || 
+                 'unknown';
+  
+  await supabase.from('verifications').insert([{
+    url: url,
+    result: level,
+    user_ip: userIp
+  }]);
+} catch (error) {
+  console.error('Error guardando verificación:', error);
+  // No fallar la request si esto falla
+}
+
   // ===== RESPUESTA FINAL =====
   return res.status(200).json({
     ...result,
