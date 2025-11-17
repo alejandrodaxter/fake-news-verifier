@@ -56,6 +56,63 @@ export default async function handler(req, res) {
     }
   }
 
+ // ===== ANÁLISIS DE CONTENIDO (solo título/URL) =====
+function analyzeText(title, url) {
+  const penalties = [];
+  let contentScore = 0;
+  
+  const text = (title + ' ' + url).toLowerCase();
+  
+  // 1. MAYÚSCULAS EXCESIVAS en título
+  const upperCaseCount = (title.match(/[A-Z]/g) || []).length;
+  if (upperCaseCount > title.length * 0.4) {
+    contentScore -= 15;
+    penalties.push('⚠️ Título con mayúsculas excesivas');
+  }
+  
+  // 2. SIGNOS DE EXCLAMACIÓN MÚLTIPLES
+  if (/!!!+/.test(title)) {
+    contentScore -= 10;
+    penalties.push('⚠️ Múltiples signos de exclamación');
+  }
+  
+  // 3. PALABRAS SENSACIONALISTAS
+  const sensationalWords = [
+    'impactante', 'increíble', 'shock', 'viral', 'no creerás',
+    'urgente', 'última hora', 'bomba', 'escándalo', 'milagroso',
+    'terrible', 'devastador', 'aterrador', 'exclusivo'
+  ];
+  
+  let sensationalCount = 0;
+  sensationalWords.forEach(word => {
+    if (text.includes(word)) sensationalCount++;
+  });
+  
+  if (sensationalCount >= 3) {
+    contentScore -= 20;
+    penalties.push('❌ Lenguaje sensacionalista excesivo');
+  } else if (sensationalCount >= 2) {
+    contentScore -= 10;
+    penalties.push('⚠️ Lenguaje emocional detectado');
+  }
+  
+  // 4. NÚMEROS EXAGERADOS sin contexto
+  const bigNumbers = text.match(/\d{5,}/g); // 5+ dígitos
+  if (bigNumbers && bigNumbers.length >= 2) {
+    contentScore -= 8;
+    penalties.push('⚠️ Cifras grandes sin contexto');
+  }
+  
+  // 5. PALABRAS TODO EN MAYÚSCULAS
+  const allCapsWords = title.match(/\b[A-Z]{3,}\b/g);
+  if (allCapsWords && allCapsWords.length >= 2) {
+    contentScore -= 12;
+    penalties.push('⚠️ Palabras completas en mayúsculas');
+  }
+  
+  return { contentScore, penalties };
+}
+  
   function evaluate(input) {
     const p = parseUrl(input);
     const reasons = [];
@@ -136,8 +193,13 @@ export default async function handler(req, res) {
       reasons.push("❌ Patrón de clickbait detectado en el slug");
     }
 
-    // Normalizar score (0-100)
-    score = Math.max(0, Math.min(100, score));
+    // Análisis de contenido del título
+    const titleAnalysis = analyzeText(path, p.url);
+    score += titleAnalysis.contentScore;
+    reasons.push(...titleAnalysis.penalties);
+
+// Normalizar score (0-100)
+score = Math.max(0, Math.min(100, score));
 
     // Determinar nivel y mensaje
     let message, level;
