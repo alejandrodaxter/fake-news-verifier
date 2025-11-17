@@ -704,6 +704,94 @@ function clearHistory() {
   }
 }
 
+// ===== ESTADÍSTICAS GLOBALES =====
+
+async function loadGlobalStats() {
+  try {
+    const response = await fetch('/api/stats');
+    const data = await response.json();
+    
+    const statsDiv = document.getElementById('globalStats');
+    if (!statsDiv) return;
+    
+    statsDiv.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #3b82f622, #2563eb22);
+        border: 2px solid #3b82f6;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        transition: transform 0.3s;
+      "
+      onmouseover="this.style.transform='translateY(-5px)'"
+      onmouseout="this.style.transform='translateY(0)'">
+        <div style="font-size: 48px; font-weight: bold; color: #3b82f6; margin-bottom: 10px;">
+          ${data.totalVerificaciones || 0}
+        </div>
+        <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">
+          🔍 Verificaciones
+        </div>
+      </div>
+      
+      <div style="
+        background: linear-gradient(135deg, #22c55e22, #16a34a22);
+        border: 2px solid #22c55e;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        transition: transform 0.3s;
+      "
+      onmouseover="this.style.transform='translateY(-5px)'"
+      onmouseout="this.style.transform='translateY(0)'">
+        <div style="font-size: 48px; font-weight: bold; color: #22c55e; margin-bottom: 10px;">
+          ${data.usuariosActivos || 0}
+        </div>
+        <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">
+          👥 Usuarios
+        </div>
+      </div>
+      
+      <div style="
+        background: linear-gradient(135deg, #ef444422, #dc262622);
+        border: 2px solid #ef4444;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        transition: transform 0.3s;
+      "
+      onmouseover="this.style.transform='translateY(-5px)'"
+      onmouseout="this.style.transform='translateY(0)'">
+        <div style="font-size: 48px; font-weight: bold; color: #ef4444; margin-bottom: 10px;">
+          ${data.totalReportes || 0}
+        </div>
+        <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">
+          🚫 Reportes
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error cargando estadísticas:', error);
+    // Mostrar valores por defecto
+    const statsDiv = document.getElementById('globalStats');
+    if (statsDiv) {
+      statsDiv.innerHTML = `
+        <div style="background: linear-gradient(135deg, #3b82f622, #2563eb22); border: 2px solid #3b82f6; padding: 30px; border-radius: 16px; text-align: center;">
+          <div style="font-size: 48px; font-weight: bold; color: #3b82f6;">0</div>
+          <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">🔍 Verificaciones</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #22c55e22, #16a34a22); border: 2px solid #22c55e; padding: 30px; border-radius: 16px; text-align: center;">
+          <div style="font-size: 48px; font-weight: bold; color: #22c55e;">0</div>
+          <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">👥 Usuarios</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #ef444422, #dc262622); border: 2px solid #ef4444; padding: 30px; border-radius: 16px; text-align: center;">
+          <div style="font-size: 48px; font-weight: bold; color: #ef4444;">0</div>
+          <div style="color: #94a3b8; font-size: 16px; font-weight: 600;">🚫 Reportes</div>
+        </div>
+      `;
+    }
+  }
+}
+
 // ===== SISTEMA DE REPORTES =====
 
 async function reportarURL(url) {
