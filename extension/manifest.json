@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "FakeNews Verificador",
+  "version": "1.0",
+  "description": "Verifica noticias al instante y detecta fake news",
+  "permissions": ["activeTab", "contextMenus", "storage"],
+  "host_permissions": [
+    "https://fake-news-verifier.vercel.app/*",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
