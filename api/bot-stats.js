@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // TOTALES HISTÓRICOS
+    // TOTALES GLOBALES (todos los usuarios)
     const { data: allVerifications } = await supabase
       .from('verifications')
       .select('level');
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const dudosasHistorico = allVerifications?.filter(v => v.level === 'warn').length || 0;
     const falsasHistorico = allVerifications?.filter(v => v.level === 'danger').length || 0;
 
-    // TOTALES DE HOY
+    // HOY GLOBALES
     const { data: todayVerifications } = await supabase
       .from('verifications')
       .select('level')
@@ -39,13 +39,25 @@ export default async function handler(req, res) {
     const dudosasHoy = todayVerifications?.filter(v => v.level === 'warn').length || 0;
     const falsasHoy = todayVerifications?.filter(v => v.level === 'danger').length || 0;
 
+    // Usuarios únicos (globales)
+    const uniqueIPs = allVerifications 
+      ? new Set(allVerifications.map(v => v.user_ip)).size 
+      : 0;
+
+    // Total reportes globales
+    const { count: totalReportes } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact', head: true });
+
     return res.status(200).json({
-      // Histórico
+      // Histórico global
       totalHistorico,
       confiablesHistorico,
       dudosasHistorico,
       falsasHistorico,
-      // Hoy
+      usuariosUnicos: uniqueIPs,
+      reportesGlobales: totalReportes || 0,
+      // Hoy global
       totalHoy,
       confiablesHoy,
       dudosasHoy,
@@ -59,6 +71,8 @@ export default async function handler(req, res) {
       confiablesHistorico: 0,
       dudosasHistorico: 0,
       falsasHistorico: 0,
+      usuariosUnicos: 0,
+      reportesGlobales: 0,
       totalHoy: 0,
       confiablesHoy: 0,
       dudosasHoy: 0,

@@ -204,14 +204,16 @@ async function sendStatsMessage(chatId, req) {
     const stats = await statsResponse.json();
 
     await sendTelegramMessage(chatId,
-      `📊 *Estadísticas del bot:*\n\n` +
+      `📊 *Estadísticas Globales:*\n\n` +
       `*📈 Total Histórico:*\n` +
-      `🔍 URLs verificadas: ${stats.totalHistorico || 0}\n` +
+      `🔍 Verificaciones: ${stats.totalHistorico || 0}\n` +
       `✅ Confiables: ${stats.confiablesHistorico || 0}\n` +
       `⚠️ Dudosas: ${stats.dudosasHistorico || 0}\n` +
-      `❌ Falsas: ${stats.falsasHistorico || 0}\n\n` +
+      `❌ Falsas: ${stats.falsasHistorico || 0}\n` +
+      `👥 Usuarios activos: ${stats.usuariosUnicos || 0}\n` +
+      `🚫 Reportes: ${stats.reportesGlobales || 0}\n\n` +
       `*📅 Hoy:*\n` +
-      `🔍 URLs verificadas: ${stats.totalHoy || 0}\n` +
+      `🔍 Verificaciones: ${stats.totalHoy || 0}\n` +
       `✅ Confiables: ${stats.confiablesHoy || 0}\n` +
       `⚠️ Dudosas: ${stats.dudosasHoy || 0}\n` +
       `❌ Falsas: ${stats.falsasHoy || 0}\n\n` +
