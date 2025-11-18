@@ -306,11 +306,18 @@ async function sendTelegramMessageWithButtons(chatId, text, parseMode = null, ke
     body.reply_markup = keyboard;
   }
 
-  await fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+
+  const result = await response.json();
+  console.log('📱 Respuesta Telegram:', JSON.stringify(result));
+  
+  if (!result.ok) {
+    console.error('❌ Telegram error:', result.description);
+  }
 }
 
 // Manejar callbacks de botones
