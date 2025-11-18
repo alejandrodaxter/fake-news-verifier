@@ -28,8 +28,20 @@ export default async function handler(req, res) {
     const chatId = message.chat.id;
     const text = message.text.trim();
 
-    // Comando /start
+    // Comando /start - CON TOTAL GLOBAL
     if (text === '/start') {
+      // Obtener stats globales
+      const globalStatsResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/global-stats`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      let totalGlobal = 0;
+      if (globalStatsResponse.ok) {
+        const globalStats = await globalStatsResponse.json();
+        totalGlobal = globalStats.totalGlobal || 0;
+      }
+
       const startKeyboard = {
         inline_keyboard: [
           [
@@ -40,7 +52,7 @@ export default async function handler(req, res) {
           ],
           [
             {
-              text: '📊 Ver estadísticas',
+              text: '📊 Mis estadísticas',
               callback_data: 'show_stats'
             },
             {
@@ -54,11 +66,12 @@ export default async function handler(req, res) {
       await sendTelegramMessageWithButtons(chatId,
         `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
         `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
+        `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias en total*\n\n` +
         `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
         `También puedes usar:\n` +
         `/help - Ver ayuda\n` +
-        `/stats - Ver estadísticas`,
-        null,
+        `/stats - Ver tus estadísticas`,
+        'Markdown',
         startKeyboard
       );
       return res.status(200).json({ ok: true });
@@ -80,7 +93,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Comando /stats - CON DATOS REALES
+    // Comando /stats - MIS STATS PERSONALES
     if (text === '/stats') {
       await sendStatsMessage(chatId, req);
       return res.status(200).json({ ok: true });
@@ -108,7 +121,7 @@ export default async function handler(req, res) {
     const verifyResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url, userIp: `telegram_${chatId}` }) // Guardar con chatId
     });
 
     if (!verifyResponse.ok) {
@@ -188,13 +201,14 @@ export default async function handler(req, res) {
   }
 }
 
-// ============ NUEVA FUNCIÓN: STATS REALES ============
+// ============ STATS PERSONALES ============
 async function sendStatsMessage(chatId, req) {
   try {
-    // Llamar a API de stats reales
+    // Llamar a API de stats personales
     const statsResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/bot-stats`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId })
     });
 
     if (!statsResponse.ok) {
@@ -204,16 +218,14 @@ async function sendStatsMessage(chatId, req) {
     const stats = await statsResponse.json();
 
     await sendTelegramMessage(chatId,
-      `📊 *Estadísticas Globales:*\n\n` +
-      `*📈 Total Histórico:*\n` +
-      `🔍 Verificaciones: ${stats.totalHistorico || 0}\n` +
+      `📊 *Mis Estadísticas:*\n\n` +
+      `*📈 Mis Verificaciones Históricas:*\n` +
+      `🔍 URLs verificadas: ${stats.totalHistorico || 0}\n` +
       `✅ Confiables: ${stats.confiablesHistorico || 0}\n` +
       `⚠️ Dudosas: ${stats.dudosasHistorico || 0}\n` +
-      `❌ Falsas: ${stats.falsasHistorico || 0}\n` +
-      `👥 Usuarios activos: ${stats.usuariosUnicos || 0}\n` +
-      `🚫 Reportes: ${stats.reportesGlobales || 0}\n\n` +
-      `*📅 Hoy:*\n` +
-      `🔍 Verificaciones: ${stats.totalHoy || 0}\n` +
+      `❌ Falsas: ${stats.falsasHistorico || 0}\n\n` +
+      `*📅 Mis Verificaciones - Hoy:*\n` +
+      `🔍 URLs verificadas: ${stats.totalHoy || 0}\n` +
       `✅ Confiables: ${stats.confiablesHoy || 0}\n` +
       `⚠️ Dudosas: ${stats.dudosasHoy || 0}\n` +
       `❌ Falsas: ${stats.falsasHoy || 0}\n\n` +
@@ -322,7 +334,7 @@ async function handleCallback(callback_query, req) {
     return;
   }
 
-  // Mostrar stats REALES desde callback
+  // Mostrar stats PERSONALES desde callback
   if (data === 'show_stats') {
     await sendStatsMessage(chatId, req);
     return;
