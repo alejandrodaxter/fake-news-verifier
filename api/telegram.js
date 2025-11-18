@@ -147,6 +147,10 @@ if (!verifyResponse.ok) {
 
     const data = await verifyResponse.json();
 
+    // 🆕 Log prueba
+console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
+
+
     // Formatear respuesta
     let emoji = '❌';
     let nivel = 'FALSO';
