@@ -118,24 +118,26 @@ export default async function handler(req, res) {
     await sendTelegramMessage(chatId, `🔍 Verificando URL...\n\n${url}`);
 
    // Llamar al verificador CON TIMEOUT
-const verifyResponse = await Promise.race([
-  fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, userIp: `telegram_${chatId}` })
-  }),
-  new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Timeout')), 25000) // 25 segundos
-  )
-]).catch(async (error) => {
-  console.error('Error verificando:', error);
+let verifyResponse;
+try {
+  verifyResponse = await Promise.race([
+    fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, userIp: `telegram_${chatId}` })
+    }),
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), 25000)
+    )
+  ]);
+} catch (error) {
+  console.error('Timeout o error:', error);
   await sendTelegramMessage(chatId,
-    `⚠️ La verificación está tomando más tiempo del esperado.\n\n` +
-    `Intenta verificar directamente en:\n` +
-    `https://fake-news-verifier.vercel.app/verificador.html`
+    `⚠️ La verificación está tardando mucho.\n\n` +
+    `Intenta aquí: fake-news-verifier.vercel.app/verificador.html`
   );
-  throw error;
-});
+  return res.status(200).json({ ok: true });
+}
 
 if (!verifyResponse.ok) {
   const errorText = await verifyResponse.text();
