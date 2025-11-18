@@ -212,9 +212,17 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
       ]
     };
 
-    await sendTelegramMessageWithButtons(chatId, response, 'Markdown', keyboard);
+    try {
+  console.log('📤 Enviando respuesta a Telegram:', response.substring(0, 100));
+  await sendTelegramMessageWithButtons(chatId, response, 'Markdown', keyboard);
+  console.log('✅ Mensaje enviado exitosamente');
+} catch (error) {
+  console.error('❌ Error enviando mensaje a Telegram:', error);
+  // Intentar enviar sin Markdown
+  await sendTelegramMessage(chatId, response.replace(/\*/g, ''));
+}
 
-    return res.status(200).json({ ok: true });
+return res.status(200).json({ ok: true });
 
   } catch (error) {
     console.error('Error en bot de Telegram:', error);
