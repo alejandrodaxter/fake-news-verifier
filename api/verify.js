@@ -112,7 +112,53 @@ function analyzeText(title, url) {
   
   return { contentScore, penalties };
 }
-  
+
+// ===== VERIFICAR RIESGO DEL DOMINIO =====
+async function checkDomainRisk(hostname) {
+  try {
+    // Resolver IP del dominio
+    const dnsUrl = `https://dns.google/resolve?name=${hostname}&type=A`;
+    const dnsResponse = await fetch(dnsUrl, { timeout: 3000 });
+    const dnsData = await dnsResponse.json();
+    
+    if (!dnsData.Answer || dnsData.Answer.length === 0) {
+      return { score: 0, penalties: [] };
+    }
+    
+    const ip = dnsData.Answer[0].data;
+    
+    // Verificar información del IP
+    const ipUrl = `https://ipapi.co/${ip}/json/`;
+    const ipResponse = await fetch(ipUrl, { timeout: 3000 });
+    const ipData = await ipResponse.json();
+    
+    let score = 0;
+    const penalties = [];
+    
+    // Verificar país sospechoso
+    const suspiciousCountries = ['CN', 'RU', 'KP', 'IR'];
+    if (suspiciousCountries.includes(ipData.country_code)) {
+      score -= 15;
+      penalties.push(`⚠️ Servidor en ${ipData.country_name} (ubicación inusual)`);
+    }
+    
+    // Verificar hosting profesional
+    if (ipData.org) {
+      const org = ipData.org.toLowerCase();
+      if (org.includes('cloudflare') || org.includes('google') || org.includes('amazon') || org.includes('microsoft')) {
+        score += 5;
+        penalties.push('✅ Hosting profesional detectado');
+      }
+    }
+    
+    return { score, penalties };
+    
+  } catch (error) {
+    console.log('No se pudo verificar dominio:', error.message);
+    return { score: 0, penalties: [] };
+  }
+}
+
   function evaluate(input) {
     const p = parseUrl(input);
     const reasons = [];
@@ -218,7 +264,24 @@ score = Math.max(0, Math.min(100, score));
   }
 
   // Evaluar la URL
-  const result = evaluate(url);
+const result = evaluate(url);
+
+// Verificar riesgo del dominio por IP
+const domainRisk = await checkDomainRisk(result.hostname);
+result.score += domainRisk.score;
+result.reasons.push(...domainRisk.penalties);
+
+// Re-normalizar score
+result.score = Math.max(0, Math.min(100, result.score));
+
+// Re-evaluar level según nuevo score
+if (result.score >= 70) {
+  result.level = "ok";
+} else if (result.score >= 40) {
+  result.level = "warn";
+} else {
+  result.level = "bad";
+}
 
   // ===== EXTRAER QUERY PARA APIs =====
   let query = "";
