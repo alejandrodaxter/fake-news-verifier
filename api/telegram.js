@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, callback_query } = req.body;
 
     //===== Manejar callbacks de botones =====
     if (callback_query) {
