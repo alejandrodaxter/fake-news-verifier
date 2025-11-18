@@ -335,31 +335,7 @@ if (result.score >= 70) {
     }
   }
 
-  // ===== NEWSAPI =====
-  let corroborations = [];
-  const newsApiKey = process.env.NEWSAPI_KEY;
-  
-  if (newsApiKey) {
-    try {
-      const newsUrl = `https://newsapi.org/v2/everything?q=${query}&language=es&sortBy=publishedAt&pageSize=10&apiKey=${newsApiKey}`;
-      const respNews = await fetch(newsUrl);
-      const newsData = await respNews.json();
 
-      if (newsData.articles && newsData.articles.length > 0) {
-        corroborations = newsData.articles
-          .filter(a => a.url && TRUSTED.some(domain => a.url.includes(domain)))
-          .slice(0, 5)
-          .map(a => ({
-            source: a.source.name,
-            title: a.title,
-            url: a.url,
-            publishedAt: a.publishedAt
-          }));
-      }
-    } catch (err) {
-      console.error("Error consultando NewsAPI:", err);
-    }
-  }
 
   // 🆕 Guardar verificación en Supabase
 try {
@@ -388,7 +364,6 @@ try {
   return res.status(200).json({
     ...result,
     factChecks: factChecks,
-    corroborations: corroborations,
     searchQuery: decodeURIComponent(query)
   });
 }
