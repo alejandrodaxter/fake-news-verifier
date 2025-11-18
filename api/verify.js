@@ -116,9 +116,16 @@ function analyzeText(title, url) {
 // ===== VERIFICAR RIESGO DEL DOMINIO =====
 async function checkDomainRisk(hostname) {
   try {
+    // TIMEOUT DE 3 SEGUNDOS
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
     // Resolver IP del dominio
     const dnsUrl = `https://dns.google/resolve?name=${hostname}&type=A`;
-    const dnsResponse = await fetch(dnsUrl, { timeout: 3000 });
+    const dnsResponse = await fetch(dnsUrl, { signal: controller.signal });
+    
+    clearTimeout(timeoutId);
+    
     const dnsData = await dnsResponse.json();
     
     if (!dnsData.Answer || dnsData.Answer.length === 0) {
@@ -127,9 +134,15 @@ async function checkDomainRisk(hostname) {
     
     const ip = dnsData.Answer[0].data;
     
-    // Verificar información del IP
+    // Verificar información del IP (con otro timeout)
+    const controller2 = new AbortController();
+    const timeoutId2 = setTimeout(() => controller2.abort(), 3000);
+    
     const ipUrl = `https://ipapi.co/${ip}/json/`;
-    const ipResponse = await fetch(ipUrl, { timeout: 3000 });
+    const ipResponse = await fetch(ipUrl, { signal: controller2.signal });
+    
+    clearTimeout(timeoutId2);
+    
     const ipData = await ipResponse.json();
     
     let score = 0;
@@ -154,7 +167,8 @@ async function checkDomainRisk(hostname) {
     return { score, penalties };
     
   } catch (error) {
-    console.log('No se pudo verificar dominio:', error.message);
+    // Si hay timeout o error, falla silenciosamente
+    console.log('checkDomainRisk timeout o error:', error.message);
     return { score: 0, penalties: [] };
   }
 }
