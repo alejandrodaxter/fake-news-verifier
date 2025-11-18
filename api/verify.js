@@ -369,7 +369,8 @@ try {
     process.env.SUPABASE_ANON_KEY
   );
   
-  const userIp = req.headers['x-forwarded-for']?.split(',')[0] || 
+  const userIp = req.body.userIp ||
+                 req.headers['x-forwarded-for']?.split(',')[0] || 
                  req.headers['x-real-ip'] || 
                  'unknown';
   
