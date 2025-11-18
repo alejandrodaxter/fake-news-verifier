@@ -205,10 +205,16 @@ async function sendStatsMessage(chatId, req) {
 
     await sendTelegramMessage(chatId,
       `📊 *Estadísticas del bot:*\n\n` +
-      `🔍 URLs verificadas hoy: ${stats.today || 0}\n` +
-      `✅ Confiables: ${stats.confiables || 0}\n` +
-      `⚠️ Dudosas: ${stats.dudosas || 0}\n` +
-      `❌ Falsas: ${stats.falsas || 0}\n\n` +
+      `*📈 Total Histórico:*\n` +
+      `🔍 URLs verificadas: ${stats.totalHistorico || 0}\n` +
+      `✅ Confiables: ${stats.confiablesHistorico || 0}\n` +
+      `⚠️ Dudosas: ${stats.dudosasHistorico || 0}\n` +
+      `❌ Falsas: ${stats.falsasHistorico || 0}\n\n` +
+      `*📅 Hoy:*\n` +
+      `🔍 URLs verificadas: ${stats.totalHoy || 0}\n` +
+      `✅ Confiables: ${stats.confiablesHoy || 0}\n` +
+      `⚠️ Dudosas: ${stats.dudosasHoy || 0}\n` +
+      `❌ Falsas: ${stats.falsasHoy || 0}\n\n` +
       `_Actualizadas en tiempo real_`,
       'Markdown'
     );

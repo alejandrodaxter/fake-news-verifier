@@ -18,31 +18,51 @@ export default async function handler(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Total de verificaciones HOY
+    // TOTALES HISTÓRICOS
+    const { data: allVerifications } = await supabase
+      .from('verifications')
+      .select('level');
+
+    const totalHistorico = allVerifications?.length || 0;
+    const confiablesHistorico = allVerifications?.filter(v => v.level === 'ok').length || 0;
+    const dudosasHistorico = allVerifications?.filter(v => v.level === 'warn').length || 0;
+    const falsasHistorico = allVerifications?.filter(v => v.level === 'danger').length || 0;
+
+    // TOTALES DE HOY
     const { data: todayVerifications } = await supabase
       .from('verifications')
       .select('level')
       .gte('created_at', today.toISOString());
 
-    const total = todayVerifications?.length || 0;
-    const confiables = todayVerifications?.filter(v => v.level === 'ok').length || 0;
-    const dudosas = todayVerifications?.filter(v => v.level === 'warn').length || 0;
-    const falsas = todayVerifications?.filter(v => v.level === 'danger').length || 0;
+    const totalHoy = todayVerifications?.length || 0;
+    const confiablesHoy = todayVerifications?.filter(v => v.level === 'ok').length || 0;
+    const dudosasHoy = todayVerifications?.filter(v => v.level === 'warn').length || 0;
+    const falsasHoy = todayVerifications?.filter(v => v.level === 'danger').length || 0;
 
     return res.status(200).json({
-      today: total,
-      confiables: confiables,
-      dudosas: dudosas,
-      falsas: falsas
+      // Histórico
+      totalHistorico,
+      confiablesHistorico,
+      dudosasHistorico,
+      falsasHistorico,
+      // Hoy
+      totalHoy,
+      confiablesHoy,
+      dudosasHoy,
+      falsasHoy
     });
 
   } catch (error) {
     console.error('Error en /api/bot-stats:', error);
     return res.status(200).json({
-      today: 0,
-      confiables: 0,
-      dudosas: 0,
-      falsas: 0
+      totalHistorico: 0,
+      confiablesHistorico: 0,
+      dudosasHistorico: 0,
+      falsasHistorico: 0,
+      totalHoy: 0,
+      confiablesHoy: 0,
+      dudosasHoy: 0,
+      falsasHoy: 0
     });
   }
 }
