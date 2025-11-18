@@ -292,16 +292,12 @@ async function handleCallback(callback_query) {
     }
     return;
   }
- if (data === 'show_stats') {
-    await sendTelegramMessage(chatId,
-      `📊 *Estadísticas del bot:*\n\n` +
-      `🔍 URLs verificadas hoy: 47\n` +
-      `✅ Confiables: 28\n` +
-      `⚠️ Dudosas: 12\n` +
-      `❌ Falsas: 7\n\n` +
-      `_Actualizadas en tiempo real_`,
-      'Markdown'
-    );
+
+
+  
+ // Mostrar stats REALES desde callback
+  if (data === 'show_stats') {
+    await sendStatsMessage(chatId, req);
     return;
   }
 
