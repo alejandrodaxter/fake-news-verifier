@@ -376,7 +376,7 @@ try {
   
   await supabase.from('verifications').insert([{
     url: url,
-    level: result.level,
+    result: result.level,
     user_ip: userIp
   }]);
 } catch (error) {
