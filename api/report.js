@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
+    return res.status(405).json({ error: 'Metodo no permitido' });
   }
 
   try {
@@ -21,31 +20,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'URL no proporcionada' });
     }
 
-    // Inicializar Supabase
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
     );
 
-    // Obtener IP del usuario (opcional)
     const userIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-    // Guardar reporte
     const { data, error } = await supabase
       .from('reports')
-      .insert([
-        {
-          url: url,
-          user_ip: userIp
-        }
-      ]);
+      .insert([{ url: url, user_ip: userIp }]);
 
     if (error) {
       console.error('Error al guardar reporte:', error);
       return res.status(500).json({ error: 'Error al guardar reporte' });
     }
 
-    // Contar total de reportes para esta URL
     const { count } = await supabase
       .from('reports')
       .select('*', { count: 'exact', head: true })
@@ -58,7 +48,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error en /api/report:', error);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Error interno' });
   }
 }
