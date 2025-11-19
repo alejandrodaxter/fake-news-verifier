@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // CORS
+  // CORS-NPI
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,36 +15,49 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { url } = req.query;
-
-    if (!url) {
-      return res.status(400).json({ error: 'URL no proporcionada' });
-    }
-
-    // Inicializar Supabase
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
     );
 
-    // Contar reportes para esta URL
-    const { count, error } = await supabase
+    // Obtener todos los reportes
+    const { data: allReports, error } = await supabase
       .from('reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('url', url);
+      .select('url, created_at')
+      .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error al obtener reportes:', error);
-      return res.status(500).json({ error: 'Error al obtener reportes' });
-    }
+    if (error) throw error;
+
+    // Agrupar por URL y contar
+    const urlCounts = {};
+    allReports.forEach(report => {
+      if (!urlCounts[report.url]) {
+        urlCounts[report.url] = {
+          url: report.url,
+          count: 0,
+          last_reported: report.created_at
+        };
+      }
+      urlCounts[report.url].count++;
+      
+      // Actualizar fecha más reciente
+      if (new Date(report.created_at) > new Date(urlCounts[report.url].last_reported)) {
+        urlCounts[report.url].last_reported = report.created_at;
+      }
+    });
+
+    // Convertir a array y ordenar por cantidad de reportes
+    const reports = Object.values(urlCounts)
+      .sort((a, b) => b.count - a.count);
 
     return res.status(200).json({
-      url: url,
-      reports: count || 0
+      totalReports: allReports.length,
+      uniqueUrls: reports.length,
+      reports: reports
     });
 
   } catch (error) {
-    console.error('Error en /api/get-reports:', error);
+    console.error('Error obteniendo reportes:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
