@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     // HISTÓRICO PERSONAL (por chatId como user_ip)
     const { data: myVerifications, error } = await supabase
       .from('verifications')
-      .select('level')
+      .select('result')
       .eq('user_ip', `telegram_${chatId}`);
 
 // 🆕 AGREGAR ESTO
@@ -45,21 +45,21 @@ console.log('❌ Error Supabase:', JSON.stringify(error));
 console.log('📊 Length:', myVerifications?.length);
 
     const totalHistorico = myVerifications?.length || 0;
-    const confiablesHistorico = myVerifications?.filter(v => v.level === 'ok').length || 0;
-    const dudosasHistorico = myVerifications?.filter(v => v.level === 'warn').length || 0;
-    const falsasHistorico = myVerifications?.filter(v => v.level === 'bad').length || 0;
+    const confiablesHistorico = myVerifications?.filter(v => v.result === 'ok').length || 0;
+    const dudosasHistorico = myVerifications?.filter(v => v.result === 'warn').length || 0;
+    const falsasHistorico = myVerifications?.filter(v => v.result === 'bad').length || 0;
 
     // HOY PERSONAL
     const { data: todayVerifications } = await supabase
       .from('verifications')
-      .select('level')
+      .select('result')
       .eq('user_ip', `telegram_${chatId}`)
       .gte('created_at', today.toISOString());
 
     const totalHoy = todayVerifications?.length || 0;
-    const confiablesHoy = todayVerifications?.filter(v => v.level === 'ok').length || 0;
-    const dudosasHoy = todayVerifications?.filter(v => v.level === 'warn').length || 0;
-    const falsasHoy = todayVerifications?.filter(v => v.level === 'bad').length || 0;
+    const confiablesHoy = todayVerifications?.filter(v => v.result === 'ok').length || 0;
+    const dudosasHoy = todayVerifications?.filter(v => v.result === 'warn').length || 0;
+    const falsasHoy = todayVerifications?.filter(v => v.tesult === 'bad').length || 0;
 
     return res.status(200).json({
       totalHistorico,
