@@ -35,6 +35,11 @@ export default async function handler(req, res) {
       .select('level')
       .eq('user_ip', `telegram_${chatId}`);
 
+// 🆕 AGREGAR ESTO
+console.log('🔍 Buscando chatId:', chatId);
+console.log('🔍 Buscando user_ip:', `telegram_${chatId}`);
+console.log('📊 Verificaciones encontradas:', myVerifications?.length);
+
     const totalHistorico = myVerifications?.length || 0;
     const confiablesHistorico = myVerifications?.filter(v => v.level === 'ok').length || 0;
     const dudosasHistorico = myVerifications?.filter(v => v.level === 'warn').length || 0;
