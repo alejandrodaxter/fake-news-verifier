@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     const totalHistorico = myVerifications?.length || 0;
     const confiablesHistorico = myVerifications?.filter(v => v.level === 'ok').length || 0;
     const dudosasHistorico = myVerifications?.filter(v => v.level === 'warn').length || 0;
-    const falsasHistorico = myVerifications?.filter(v => v.level === 'danger').length || 0;
+    const falsasHistorico = myVerifications?.filter(v => v.level === 'bad').length || 0;
 
     // HOY PERSONAL
     const { data: todayVerifications } = await supabase
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     const totalHoy = todayVerifications?.length || 0;
     const confiablesHoy = todayVerifications?.filter(v => v.level === 'ok').length || 0;
     const dudosasHoy = todayVerifications?.filter(v => v.level === 'warn').length || 0;
-    const falsasHoy = todayVerifications?.filter(v => v.level === 'danger').length || 0;
+    const falsasHoy = todayVerifications?.filter(v => v.level === 'bad').length || 0;
 
     return res.status(200).json({
       totalHistorico,
