@@ -31,6 +31,10 @@ export default async function handler(req, res) {
 const now = new Date();
 const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
+// 🆕 AGREGAR LOGS
+console.log('📅 Buscando desde:', today.toISOString());
+console.log('📅 Hora actual UTC:', now.toISOString());
+
     // HISTÓRICO PERSONAL (por chatId como user_ip)
     const { data: myVerifications, error } = await supabase
       .from('verifications')
@@ -59,7 +63,7 @@ console.log('📊 Length:', myVerifications?.length);
     const totalHoy = todayVerifications?.length || 0;
     const confiablesHoy = todayVerifications?.filter(v => v.result === 'ok').length || 0;
     const dudosasHoy = todayVerifications?.filter(v => v.result === 'warn').length || 0;
-    const falsasHoy = todayVerifications?.filter(v => v.tesult === 'bad').length || 0;
+    const falsasHoy = todayVerifications?.filter(v => v.result === 'bad').length || 0;
 
     return res.status(200).json({
       totalHistorico,
