@@ -53,12 +53,12 @@ export default async function handler(req, res) {
       const unshortenToken = process.env.UNSHORTEN_API_TOKEN;
       
       if (!unshortenToken) {
-        console.log('UNSHORTEN_API_TOKEN no configurado');
+        console.log('⚠️ UNSHORTEN_API_TOKEN no configurado');
         return null;
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos
 
       const apiUrl = `https://unshorten.me/api/v2/unshorten?url=${encodeURIComponent(shortUrl)}`;
       
@@ -78,14 +78,12 @@ export default async function handler(req, res) {
       }
 
       const data = await response.json();
-      
-      // La respuesta tiene la URL expandida en diferentes campos según la API
       const expandedUrl = data.unshortened_url || data.resolved_url || data.url;
       
       return expandedUrl || null;
       
     } catch (error) {
-      console.log('Error expandiendo URL:', error.message);
+      console.log('Error expandiendo URL (continuando):', error.message);
       return null;
     }
   }
