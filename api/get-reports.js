@@ -19,13 +19,30 @@ export default async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY
     );
 
+    console.log('📊 Obteniendo reportes...');
+
     const { data: allReports, error } = await supabase
       .from('reports')
       .select('url, created_at')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error Supabase:', error);
+      throw error;
+    }
 
+    console.log('✅ Reportes obtenidos:', allReports?.length || 0);
+
+    // SI NO HAY REPORTES, RETORNAR VACÍO
+    if (!allReports || allReports.length === 0) {
+      return res.status(200).json({
+        totalReports: 0,
+        uniqueUrls: 0,
+        reports: []
+      });
+    }
+
+    // AGRUPAR POR URL
     const urlCounts = {};
     allReports.forEach(report => {
       if (!urlCounts[report.url]) {
@@ -44,6 +61,11 @@ export default async function handler(req, res) {
 
     const reports = Object.values(urlCounts).sort((a, b) => b.count - a.count);
 
+    console.log('📤 Enviando respuesta:', {
+      totalReports: allReports.length,
+      uniqueUrls: reports.length
+    });
+
     return res.status(200).json({
       totalReports: allReports.length,
       uniqueUrls: reports.length,
@@ -51,7 +73,10 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Error interno' });
+    console.error('💥 Error en get-reports:', error);
+    return res.status(500).json({ 
+      error: 'Error interno',
+      details: error.message 
+    });
   }
 }

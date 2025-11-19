@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,13 +10,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
+    return res.status(405).json({ error: 'Metodo no permitido' });
   }
 
   try {
     const { message, callback_query } = req.body;
 
-    //===== Manejar callbacks de botones =====
     if (callback_query) {
       await handleCallback(callback_query, req);
       return res.status(200).json({ ok: true });
@@ -30,9 +28,8 @@ export default async function handler(req, res) {
     const chatId = message.chat.id;
     const text = message.text.trim();
 
-    // Comando /start - CON TOTAL GLOBAL
+    // Comando /start
     if (text === '/start') {
-      // Obtener stats globales
       const globalStatsResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/global-stats`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
@@ -41,44 +38,31 @@ export default async function handler(req, res) {
       let totalGlobal = 0;
       let totalReports = 0;
       if (globalStatsResponse.ok) {
-      const globalStats = await globalStatsResponse.json();
-      totalGlobal = globalStats.totalGlobal || 0;
-      totalReports = globalStats.totalReports || 0;
-    }
+        const globalStats = await globalStatsResponse.json();
+        totalGlobal = globalStats.totalGlobal || 0;
+        totalReports = globalStats.totalReports || 0;
+      }
 
       const startKeyboard = {
         inline_keyboard: [
+          [{ text: '🌐 Abrir verificador web', url: 'https://fake-news-verifier.vercel.app/verificador.html' }],
           [
-            {
-              text: '🌐 Abrir verificador web',
-              url: 'https://fake-news-verifier.vercel.app/verificador.html'
-            }
-          ],
-          [
-            {
-              text: '📊 Mis estadísticas',
-              callback_data: 'show_stats'
-            },
-            {
-              text: 'ℹ️ Ayuda',
-              callback_data: 'show_help'
-            }
+            { text: '📊 Mis estadísticas', callback_data: 'show_stats' },
+            { text: 'ℹ️ Ayuda', callback_data: 'show_help' }
           ]
         ]
       };
 
       await sendTelegramMessageWithButtons(chatId,
-  `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
-  `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
-  `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias únicas en total*\n` +
-  `🚨 *Los usuarios han reportado ${totalReports.toLocaleString()} noticias como falsas*\n\n` +
-  `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
-  `También puedes usar:\n` +
-  `/help - Ver ayuda\n` +
-  `/stats - Ver tus estadísticas`,
-  'Markdown',
-  startKeyboard
-);
+        `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
+        `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
+        `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias únicas en total*\n` +
+        `🚨 *Los usuarios han reportado ${totalReports.toLocaleString()} noticias como falsas*\n\n` +
+        `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
+        `También puedes usar:\n/help - Ver ayuda\n/stats - Ver tus estadísticas`,
+        'Markdown',
+        startKeyboard
+      );
       return res.status(200).json({ ok: true });
     }
 
@@ -87,7 +71,7 @@ export default async function handler(req, res) {
       await sendTelegramMessage(chatId,
         `🔍 *Cómo usar el bot:*\n\n` +
         `1️⃣ Envía una URL de noticia\n` +
-        `2️⃣ Espera el análisis (5-10 seg)\n` +
+        `2️⃣ Espera el análisis (10-15 seg)\n` +
         `3️⃣ Recibe el veredicto\n\n` +
         `✅ Verde = Confiable\n` +
         `⚠️ Amarillo = Dudoso\n` +
@@ -99,7 +83,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Comando /stats - MIS STATS PERSONALES
+    // Comando /stats
     if (text === '/stats') {
       await sendStatsMessage(chatId, req);
       return res.status(200).json({ ok: true });
@@ -111,9 +95,7 @@ export default async function handler(req, res) {
 
     if (!urls || urls.length === 0) {
       await sendTelegramMessage(chatId,
-        `⚠️ No detecté ninguna URL.\n\n` +
-        `Por favor envía un link como:\n` +
-        `https://www.eltiempo.com/noticia`
+        `⚠️ No detecté ninguna URL.\n\nPor favor envía un link como:\nhttps://www.eltiempo.com/noticia`
       );
       return res.status(200).json({ ok: true });
     }
@@ -123,39 +105,37 @@ export default async function handler(req, res) {
     // Mensaje de carga
     await sendTelegramMessage(chatId, `🔍 Verificando URL...\n\n${url}`);
 
-   // Llamar al verificador CON TIMEOUT
-let verifyResponse;
-try {
-  verifyResponse = await Promise.race([
-    fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, userIp: `telegram_${chatId}` })
-    }),
-    new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout')), 25000)
-    )
-  ]);
-} catch (error) {
-  console.error('Timeout o error:', error);
-  await sendTelegramMessage(chatId,
-    `⚠️ La verificación está tardando mucho.\n\n` +
-    `Intenta aquí: fake-news-verifier.vercel.app/verificador.html`
-  );
-  return res.status(200).json({ ok: true });
-}
+    // Llamar al verificador CON TIMEOUT DE 40 SEGUNDOS
+    let verifyResponse;
+    try {
+      console.log('🚀 Llamando a verify.js...');
+      verifyResponse = await Promise.race([
+        fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, userIp: `telegram_${chatId}` })
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 40000)  // 40 segundos
+        )
+      ]);
+    } catch (error) {
+      console.error('⏱️ Timeout en verify:', error);
+      await sendTelegramMessage(chatId,
+        `⚠️ La verificación está tardando mucho.\n\nIntenta aquí: fake-news-verifier.vercel.app/verificador.html`
+      );
+      return res.status(200).json({ ok: true });
+    }
 
-if (!verifyResponse.ok) {
-  const errorText = await verifyResponse.text();
-  console.error('Error en verify:', errorText);
-  throw new Error(`Error al verificar URL: ${verifyResponse.status}`);
-}
+    if (!verifyResponse.ok) {
+      const errorText = await verifyResponse.text();
+      console.error('❌ Error en verify:', verifyResponse.status, errorText);
+      await sendTelegramMessage(chatId, `❌ Error al verificar. Intenta de nuevo.`);
+      return res.status(200).json({ ok: true });
+    }
 
     const data = await verifyResponse.json();
-
-    // 🆕 Log prueba
-console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
-
+    console.log('✅ Respuesta recibida:', data.level);
 
     // Formatear respuesta
     let emoji = '❌';
@@ -171,7 +151,6 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
 
     let response = `${emoji} *${nivel}*\n\n`;
 
-    // Agregar razones si existen
     if (data.reasons && data.reasons.length > 0) {
       response += `📋 *Factores detectados:*\n`;
       data.reasons.slice(0, 5).forEach(reason => {
@@ -180,12 +159,10 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
       response += '\n';
     }
 
-    // Agregar fact-checks si existen
     if (data.factChecks && data.factChecks.length > 0) {
       response += `🔍 *Verificaciones encontradas:* ${data.factChecks.length}\n\n`;
     }
 
-    // Recomendación
     if (data.level === 'ok') {
       response += `✅ *Recomendación:* Puedes leer y compartir con confianza.`;
     } else if (data.level === 'warn') {
@@ -196,7 +173,6 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
 
     response += `\n\n_Verifica más en: fake-news-verifier.vercel.app_`;
 
-    // 🆕 Guardar URL en Supabase para obtener ID corto
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
@@ -208,55 +184,31 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
       .select()
       .single();
 
-    // Crear botones inline
     const keyboard = {
       inline_keyboard: [
-        [
-          {
-            text: '🔍 Ver análisis completo',
-            url: `https://fake-news-verifier.vercel.app/verificador.html`
-          }
-        ],
-        [
-          {
-            text: '🚫 Reportar como falsa',
-            callback_data: `report:${urlData.id}`
-          }
-        ]
+        [{ text: '🔍 Ver análisis completo', url: `https://fake-news-verifier.vercel.app/verificador.html` }],
+        [{ text: '🚫 Reportar como falsa', callback_data: `report:${urlData.id}` }]
       ]
     };
 
-    try {
-  console.log('📤 Enviando respuesta a Telegram:', response.substring(0, 100));
-  await sendTelegramMessageWithButtons(chatId, response, 'Markdown', keyboard);
-  console.log('✅ Mensaje enviado exitosamente');
-} catch (error) {
-  console.error('❌ Error enviando mensaje a Telegram:', error);
-  // Intentar enviar sin Markdown
-  await sendTelegramMessage(chatId, response.replace(/\*/g, ''));
-}
-
-return res.status(200).json({ ok: true });
+    await sendTelegramMessageWithButtons(chatId, response, 'Markdown', keyboard);
+    return res.status(200).json({ ok: true });
 
   } catch (error) {
-    console.error('Error en bot de Telegram:', error);
+    console.error('💥 Error en telegram.js:', error);
     return res.status(200).json({ ok: true });
   }
 }
 
-// ============ STATS PERSONALES ============
 async function sendStatsMessage(chatId, req) {
   try {
-    // Llamar a API de stats personales
     const statsResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/bot-stats`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chatId })
     });
 
-    if (!statsResponse.ok) {
-      throw new Error('Error obteniendo stats');
-    }
+    if (!statsResponse.ok) throw new Error('Error obteniendo stats');
 
     const stats = await statsResponse.json();
 
@@ -277,9 +229,7 @@ async function sendStatsMessage(chatId, req) {
     );
   } catch (error) {
     console.error('Error obteniendo stats:', error);
-    await sendTelegramMessage(chatId,
-      `❌ Error al obtener estadísticas. Intenta de nuevo.`
-    );
+    await sendTelegramMessage(chatId, `❌ Error al obtener estadísticas. Intenta de nuevo.`);
   }
 }
 
@@ -287,19 +237,14 @@ async function sendTelegramMessage(chatId, text, parseMode = null) {
   const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
-  const body = {
-    chat_id: chatId,
-    text: text
-  };
-
-  if (parseMode) {
-    body.parse_mode = parseMode;
-  }
-
   await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: parseMode
+    })
   });
 }
 
@@ -312,13 +257,8 @@ async function sendTelegramMessageWithButtons(chatId, text, parseMode = null, ke
     text: text
   };
 
-  if (parseMode) {
-    body.parse_mode = parseMode;
-  }
-
-  if (keyboard) {
-    body.reply_markup = keyboard;
-  }
+  if (parseMode) body.parse_mode = parseMode;
+  if (keyboard) body.reply_markup = keyboard;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -327,43 +267,25 @@ async function sendTelegramMessageWithButtons(chatId, text, parseMode = null, ke
   });
 
   const result = await response.json();
-  console.log('📱 Respuesta Telegram:', JSON.stringify(result));
-  
   if (!result.ok) {
     console.error('❌ Telegram error:', result.description);
   }
 }
 
-// Manejar callbacks de botones
 async function handleCallback(callback_query, req) {
   const chatId = callback_query.message.chat.id;
   const data = callback_query.data;
   const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-  // Responder al callback (quita el "loading" del botón)
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/answerCallbackQuery`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      callback_query_id: callback_query.id
-    })
+    body: JSON.stringify({ callback_query_id: callback_query.id })
   });
 
-  // Verificar otra URL
-  if (data === 'verify_another') {
-    await sendTelegramMessage(chatId, 
-      `🔍 *Envíame una URL para verificar*\n\n` +
-      `Puedes enviar cualquier link de noticia y te diré si es confiable.`,
-      'Markdown'
-    );
-    return;
-  }
-
-  // Reportar como falsa
   if (data.startsWith('report:')) {
     const urlId = data.replace('report:', '');
     
-    // 🆕 Obtener URL desde Supabase
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
       process.env.SUPABASE_URL,
@@ -386,31 +308,26 @@ async function handleCallback(callback_query, req) {
       });
 
       await sendTelegramMessage(chatId,
-        `✅ *Reporte enviado*\n\n` +
-        `Gracias por ayudarnos a mantener la plataforma segura.`,
+        `✅ *Reporte enviado*\n\nGracias por ayudarnos a mantener la plataforma segura.`,
         'Markdown'
       );
     } catch (error) {
       console.error('Error reportando:', error);
-      await sendTelegramMessage(chatId,
-        `❌ Error al enviar el reporte. Intenta de nuevo.`
-      );
+      await sendTelegramMessage(chatId, `❌ Error al enviar el reporte. Intenta de nuevo.`);
     }
     return;
   }
 
-  // Mostrar stats PERSONALES desde callback
   if (data === 'show_stats') {
     await sendStatsMessage(chatId, req);
     return;
   }
 
-  // Mostrar ayuda
   if (data === 'show_help') {
     await sendTelegramMessage(chatId,
       `🔍 *Cómo usar el bot:*\n\n` +
       `1️⃣ Envía una URL de noticia\n` +
-      `2️⃣ Espera el análisis (5-10 seg)\n` +
+      `2️⃣ Espera el análisis (10-15 seg)\n` +
       `3️⃣ Recibe el veredicto\n\n` +
       `✅ Verde = Confiable\n` +
       `⚠️ Amarillo = Dudoso\n` +
@@ -419,6 +336,5 @@ async function handleCallback(callback_query, req) {
       `_Desarrollado para detectar desinformación_`,
       'Markdown'
     );
-    return;
   }
 }
