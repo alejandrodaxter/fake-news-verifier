@@ -37,6 +37,9 @@
       color: var(--text-main);
       min-height: 100vh;
       padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* ===== CARD PRINCIPAL ===== */
@@ -48,7 +51,7 @@
         0 0 80px rgba(248, 113, 113, 0.2);
       padding: 40px 48px 32px;
       width: min(98vw, 1600px);
-      margin: 20px auto;
+      margin: 0 auto;
       border: 1px solid var(--accent-soft);
       display: flex;
       flex-direction: column;
@@ -434,6 +437,10 @@
             <span id="btnText">Verificar</span>
           </button>
         </div>
+
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">
+          💡 Tip: También detectamos y expandimos URLs acortadas (bit.ly, t.co, tinyurl, etc.)
+        </p>
 
         <div id="scoreBadge"></div>
         <div id="resultado"></div>
