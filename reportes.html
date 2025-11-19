@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes Comunitarios - Fake News</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 18px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, #020617 45%, #000 100%);
+      color: #f5f5f5;
+      min-height: 100vh;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: min(98vw, 1600px);
+      margin: 0 auto;
+      padding: 50px 60px 40px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      border-radius: 28px;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.85), 0 0 80px rgba(248, 113, 113, 0.2);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    header img {
+      max-width: 280px;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 10px 30px rgba(248, 113, 113, 0.45));
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #ff4c4c;
+      margin-bottom: 15px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: rgba(26, 29, 41, 0.8);
+      padding: 20px 35px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 76, 76, 0.2);
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      color: #ff4c4c;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+
+    .reports-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .report-item {
+      background: rgba(26, 29, 41, 0.6);
+      padding: 25px 30px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 76, 76, 0.15);
+      transition: all 0.3s;
+    }
+
+    .report-item:hover {
+      border-color: rgba(255, 76, 76, 0.4);
+      transform: translateX(5px);
+    }
+
+    .report-url {
+      color: #ff4c4c;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    .report-meta {
+      display: flex;
+      gap: 25px;
+      color: #94a3b8;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+    }
+
+    .report-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 15px 35px;
+      background: linear-gradient(135deg, #ff4c4c 0%, #e63b3b 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 6px 20px rgba(255, 76, 76, 0.4);
+    }
+
+    .back-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(255, 76, 76, 0.6);
+    }
+
+    .loading {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 1.2rem;
+      padding: 60px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .empty-state-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+    }
+
+    .empty-state-text {
+      color: #94a3b8;
+      font-size: 1.3rem;
+    }
+
+    @media (max-width: 768px) {
+      html {
+        font-size: 16px;
+      }
+
+      .container {
+        padding: 35px 25px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .stats {
+        flex-direction: column;
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="Logo Fake News.png" alt="Fake News Logo">
+      <h1>🚨 Reportes Comunitarios</h1>
+      <p class="subtitle">Noticias reportadas como sospechosas por usuarios</p>
+    </header>
+
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-value" id="totalReports">-</div>
+        <div class="stat-label">Total de reportes</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="uniqueUrls">-</div>
+        <div class="stat-label">URLs únicas reportadas</div>
+      </div>
+    </div>
+
+    <div id="reportsList" class="reports-list">
+      <div class="loading">⏳ Cargando reportes...</div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="index.html" class="back-btn">← Volver al inicio</a>
+    </div>
+  </div>
+
+  <script>
+    async function loadReports() {
+      try {
+        const response = await fetch('/api/get-reports');
+        if (!response.ok) throw new Error('Error cargando reportes');
+        
+        const data = await response.json();
+        
+        // Actualizar stats
+        document.getElementById('totalReports').textContent = data.totalReports || 0;
+        document.getElementById('uniqueUrls').textContent = data.uniqueUrls || 0;
+        
+        // Mostrar reportes
+        const reportsList = document.getElementById('reportsList');
+        
+        if (!data.reports || data.reports.length === 0) {
+          reportsList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">✅</div>
+              <div class="empty-state-text">No hay reportes todavía</div>
+            </div>
+          `;
+          return;
+        }
+        
+        reportsList.innerHTML = data.reports.map(report => `
+          <div class="report-item">
+            <div class="report-url">${report.url}</div>
+            <div class="report-meta">
+              <span>🚨 ${report.count} reporte${report.count > 1 ? 's' : ''}</span>
+              <span>📅 Último: ${new Date(report.last_reported).toLocaleDateString('es-ES')}</span>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('reportsList').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⚠️</div>
+            <div class="empty-state-text">Error cargando reportes</div>
+          </div>
+        `;
+      }
+    }
+
+    loadReports();
+  </script>
+</body>
+</html>
