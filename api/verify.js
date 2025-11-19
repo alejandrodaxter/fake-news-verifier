@@ -15,6 +15,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "URL no proporcionada" });
   }
 
+  // 🆕 Inicializar Supabase AL INICIO
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
+
   // ===== CONSTANTES DE SEGURIDAD =====
   const TRUSTED = [
     "bbc.com","nytimes.com","elpais.com","reuters.com","apnews.com",
@@ -46,7 +53,7 @@ export default async function handler(req, res) {
       const unshortenToken = process.env.UNSHORTEN_API_TOKEN;
       
       if (!unshortenToken) {
-        console.log('UNSHORTEN_API_TOKEN=00d47c3e95f43acc5caf5faaaae330f5dea2f9eb');
+        console.log('UNSHORTEN_API_TOKEN no configurado');
         return null;
       }
 
@@ -216,7 +223,7 @@ async function checkDomainRisk(hostname) {
   }
 }
 
-  async function evaluate(input) {
+  async function evaluate(input, supabase, url) {
     const p = parseUrl(input);
     const reasons = [];
     let score = 50;
@@ -308,24 +315,24 @@ async function checkDomainRisk(hostname) {
     score += titleAnalysis.contentScore;
     reasons.push(...titleAnalysis.penalties);
 
-  // Verificar reportes comunitarios
-  const { data: reportData } = await supabase
-  .from('reports')
-  .select('*', { count: 'exact' })
-  .eq('url', url);
+    // Verificar reportes comunitarios
+    const { data: reportData } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact' })
+      .eq('url', url);
 
-  const reportCount = reportData?.length || 0;
+    const reportCount = reportData?.length || 0;
 
-  if (reportCount >= 1) {
-  score -= 15;
-  reasons.push(`🚨 ${reportCount} usuarios reportaron esta noticia como sospechosa`);
-} else if (reportCount >= 2) {
-  score -= 25;
-  reasons.push(`❌ ${reportCount} usuarios reportaron esta noticia como falsa`);
-  }
+    if (reportCount >= 2) {
+      score -= 25;
+      reasons.push(`❌ ${reportCount} usuarios reportaron esta noticia como falsa`);
+    } else if (reportCount >= 1) {
+      score -= 15;
+      reasons.push(`🚨 ${reportCount} usuario${reportCount > 1 ? 's' : ''} reportó esta noticia como sospechosa`);
+    }
 
     // Normalizar score (0-100)
-score = Math.max(0, Math.min(100, score));
+    score = Math.max(0, Math.min(100, score));
 
     // Determinar nivel y mensaje
     let message, level;
@@ -344,24 +351,24 @@ score = Math.max(0, Math.min(100, score));
   }
 
   // Evaluar la URL
-const result = await evaluate(url);
+  const result = await evaluate(url, supabase, url);
 
-// Verificar riesgo del dominio por IP
-const domainRisk = await checkDomainRisk(result.hostname);
-result.score += domainRisk.score;
-result.reasons.push(...domainRisk.penalties);
+  // Verificar riesgo del dominio por IP
+  const domainRisk = await checkDomainRisk(result.hostname);
+  result.score += domainRisk.score;
+  result.reasons.push(...domainRisk.penalties);
 
-// Re-normalizar score
-result.score = Math.max(0, Math.min(100, result.score));
+  // Re-normalizar score
+  result.score = Math.max(0, Math.min(100, result.score));
 
-// Re-evaluar level según nuevo score
-if (result.score >= 70) {
-  result.level = "ok";
-} else if (result.score >= 40) {
-  result.level = "warn";
-} else {
-  result.level = "bad";
-}
+  // Re-evaluar level según nuevo score
+  if (result.score >= 70) {
+    result.level = "ok";
+  } else if (result.score >= 40) {
+    result.level = "warn";
+  } else {
+    result.level = "bad";
+  }
 
   // ===== EXTRAER QUERY PARA APIs =====
   let query = "";
@@ -415,31 +422,23 @@ if (result.score >= 70) {
     }
   }
 
-
-
-  // 🆕 Guardar verificación en Supabase
-try {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  );
-  
-  const userIp = req.body.userIp ||
-                 req.headers['x-forwarded-for']?.split(',')[0] || 
-                 req.headers['x-real-ip'] || 
-                 'unknown';
-  console.log('💾 Guardando con user_ip:', userIp);
-  
-  await supabase.from('verifications').insert([{
-    url: url,
-    result: result.level,
-    user_ip: userIp
-  }]);
-} catch (error) {
-  console.error('Error guardando verificación:', error);
-  // No fallar la request si esto falla
-}
+  // Guardar verificación en Supabase
+  try {
+    const userIp = req.body.userIp ||
+                   req.headers['x-forwarded-for']?.split(',')[0] || 
+                   req.headers['x-real-ip'] || 
+                   'unknown';
+    console.log('💾 Guardando con user_ip:', userIp);
+    
+    await supabase.from('verifications').insert([{
+      url: url,
+      result: result.level,
+      user_ip: userIp
+    }]);
+  } catch (error) {
+    console.error('Error guardando verificación:', error);
+    // No fallar la request si esto falla
+  }
 
   // ===== RESPUESTA FINAL =====
   return res.status(200).json({
