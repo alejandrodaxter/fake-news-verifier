@@ -16,6 +16,8 @@ export default async function handler(req, res) {
   try {
     const { chatId } = req.body;
 
+    console.log('🚀 BOT-STATS V2 EJECUTÁNDOSE');
+
     if (!chatId) {
       return res.status(400).json({ error: 'chatId requerido' });
     }
