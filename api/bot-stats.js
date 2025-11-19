@@ -27,9 +27,9 @@ export default async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY
     );
 
-    // Fecha de hoy a las 00:00
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Fecha de HOY en UTC (no local)
+const now = new Date();
+const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
     // HISTÓRICO PERSONAL (por chatId como user_ip)
     const { data: myVerifications, error } = await supabase
