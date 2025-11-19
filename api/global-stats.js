@@ -14,10 +14,13 @@ export default async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY
     );
 
-    // TOTAL GLOBAL de verificaciones
-    const { count: totalGlobal } = await supabase
-      .from('verifications')
-      .select('*', { count: 'exact', head: true });
+    // TOTAL GLOBAL de URLs ÚNICAS verificadas
+const { data: uniqueUrls } = await supabase
+  .from('verifications')
+  .select('url');
+
+   // Contar URLs únicas
+   const totalGlobal = new Set(uniqueUrls?.map(v => v.url) || []).size;;
 
     return res.status(200).json({
       totalGlobal: totalGlobal || 0
