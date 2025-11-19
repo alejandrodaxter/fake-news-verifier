@@ -58,7 +58,7 @@ console.log('📊 Length:', myVerifications?.length);
       .from('verifications')
       .select('result')
       .eq('user_ip', `telegram_${chatId}`)
-      .gte('created_at', today.toISOString());
+      .gte('verified_at', today.toISOString());
 
     const totalHoy = todayVerifications?.length || 0;
     const confiablesHoy = todayVerifications?.filter(v => v.result === 'ok').length || 0;
