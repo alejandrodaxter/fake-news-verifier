@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -190,6 +192,18 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
 
     response += `\n\n_Verifica más en: fake-news-verifier.vercel.app_`;
 
+    // 🆕 Guardar URL en Supabase para obtener ID corto
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+
+    const { data: urlData } = await supabase
+      .from('pending_reports')
+      .insert([{ url: url }])
+      .select()
+      .single();
+
     // Crear botones inline
     const keyboard = {
       inline_keyboard: [
@@ -202,11 +216,7 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
         [
           {
             text: '🚫 Reportar como falsa',
-            callback_data: `report:${url}`
-          },
-          {
-            text: '🔄 Verificar otra',
-            callback_data: 'verify_another'
+            callback_data: `report:${urlData.id}`  // ← Ahora usa ID corto
           }
         ]
       ]
@@ -347,7 +357,22 @@ async function handleCallback(callback_query, req) {
 
   // Reportar como falsa
   if (data.startsWith('report:')) {
-    const url = data.replace('report:', '');
+    const urlId = data.replace('report:', '');
+    
+    // 🆕 Obtener URL desde Supabase
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+    
+    const { data: urlData } = await supabase
+      .from('pending_reports')
+      .select('url')
+      .eq('id', urlId)
+      .single();
+    
+    const url = urlData.url;
     
     try {
       await fetch('https://fake-news-verifier.vercel.app/api/report', {
