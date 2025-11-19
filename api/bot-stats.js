@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     today.setHours(0, 0, 0, 0);
 
     // HISTÓRICO PERSONAL (por chatId como user_ip)
-    const { data: myVerifications } = await supabase
+    const { data: myVerifications, error } = await supabase
       .from('verifications')
       .select('level')
       .eq('user_ip', `telegram_${chatId}`);

@@ -363,6 +363,7 @@ try {
                  req.headers['x-forwarded-for']?.split(',')[0] || 
                  req.headers['x-real-ip'] || 
                  'unknown';
+  console.log('💾 Guardando con user_ip:', userIp);
   
   await supabase.from('verifications').insert([{
     url: url,
