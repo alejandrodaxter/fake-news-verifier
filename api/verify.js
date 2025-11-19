@@ -163,14 +163,13 @@ function analyzeText(title, url) {
   return { contentScore, penalties };
 }
 
-// ===== VERIFICAR RIESGO DEL DOMINIO =====
+// ===== VERIFICAR RIESGO DEL DOMINIO (OPTIMIZADO) =====
 async function checkDomainRisk(hostname) {
   try {
-    // TIMEOUT DE 3 SEGUNDOS
+    // TIMEOUT DE 2 SEGUNDOS (era 3)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    // Resolver IP del dominio
     const dnsUrl = `https://dns.google/resolve?name=${hostname}&type=A`;
     const dnsResponse = await fetch(dnsUrl, { signal: controller.signal });
     
@@ -184,9 +183,9 @@ async function checkDomainRisk(hostname) {
     
     const ip = dnsData.Answer[0].data;
     
-    // Verificar información del IP (con otro timeout)
+    // TIMEOUT DE 2 SEGUNDOS (era 3)
     const controller2 = new AbortController();
-    const timeoutId2 = setTimeout(() => controller2.abort(), 3000);
+    const timeoutId2 = setTimeout(() => controller2.abort(), 2000);
     
     const ipUrl = `https://ipapi.co/${ip}/json/`;
     const ipResponse = await fetch(ipUrl, { signal: controller2.signal });
@@ -198,14 +197,12 @@ async function checkDomainRisk(hostname) {
     let score = 0;
     const penalties = [];
     
-    // Verificar país sospechoso
     const suspiciousCountries = ['CN', 'RU', 'KP', 'IR'];
     if (suspiciousCountries.includes(ipData.country_code)) {
       score -= 15;
       penalties.push(`⚠️ Servidor en ${ipData.country_name}: ubicación inusual para medios locales`);
     }
     
-    // Verificar hosting profesional
     if (ipData.org) {
       const org = ipData.org.toLowerCase();
       if (org.includes('cloudflare') || org.includes('google') || org.includes('amazon') || org.includes('microsoft')) {
@@ -217,8 +214,8 @@ async function checkDomainRisk(hostname) {
     return { score, penalties };
     
   } catch (error) {
-    // Si hay timeout o error, falla silenciosamente
-    console.log('checkDomainRisk timeout o error:', error.message);
+    // Si timeout, retorna rápido sin penalizar
+    console.log('checkDomainRisk timeout (normal, continuando)');
     return { score: 0, penalties: [] };
   }
 }
@@ -358,7 +355,7 @@ async function checkDomainRisk(hostname) {
   // Evaluar la URL
   const result = await evaluate(url, supabase, url);
 
-  // Verificar riesgo del dominio por IP
+  // Verificar riesgo del dominio (OPTIMIZADO con timeout 2s)
   const domainRisk = await checkDomainRisk(result.hostname);
   result.score += domainRisk.score;
   result.reasons.push(...domainRisk.penalties);
@@ -388,19 +385,25 @@ async function checkDomainRisk(hostname) {
     query = result.hostname;
   }
 
-  // Intentar obtener el título de la página (opcional, puede fallar por CORS)
+  // Intentar obtener título (TIMEOUT CORTO 1.5s)
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    
     const page = await fetch(url, { 
       headers: { 'User-Agent': 'Mozilla/5.0' },
-      timeout: 3000 
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
+    
     const html = await page.text();
     const match = html.match(/<title>(.*?)<\/title>/i);
     if (match && match[1]) {
-      query = match[1].substring(0, 100); // Limitar longitud
+      query = match[1].substring(0, 100);
     }
   } catch (err) {
-    console.log("No se pudo extraer título (normal si hay CORS):", err.message);
+    console.log("No se pudo extraer título (continuando)");
   }
 
   // Codificar query
