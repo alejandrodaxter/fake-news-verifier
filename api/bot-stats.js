@@ -38,9 +38,9 @@ export default async function handler(req, res) {
 // 🆕 AGREGAR ESTO
 console.log('🔍 Buscando chatId:', chatId);
 console.log('🔍 Buscando user_ip:', `telegram_${chatId}`);
-console.log('📊 Data:', myVerifications);
-console.log('❌ Error:', error);
-console.log('📊 Verificaciones encontradas:', myVerifications?.length);
+console.log('📊 Data recibida:', JSON.stringify(myVerifications));
+console.log('❌ Error Supabase:', JSON.stringify(error));
+console.log('📊 Length:', myVerifications?.length);
 
     const totalHistorico = myVerifications?.length || 0;
     const confiablesHistorico = myVerifications?.filter(v => v.level === 'ok').length || 0;
