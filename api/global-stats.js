@@ -22,15 +22,22 @@ const { data: uniqueUrls } = await supabase
    // Contar URLs únicas
    const totalGlobal = new Set(uniqueUrls?.map(v => v.url) || []).size;;
 
+   // 🆕 TOTAL de reportes
+    const { count: totalReports } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact', head: true });
+
     return res.status(200).json({
-      totalGlobal: totalGlobal || 0
+      totalGlobal: totalGlobal || 0,
+      totalReports: totalReports || 0  // 🆕
     });
 
   } catch (error) {
     console.error('Error en /api/global-stats:', error);
     return res.status(500).json({
       error: error.message,
-      totalGlobal: 0
+      totalGlobal: 0,
+      totalReports: 0
     });
   }
 }

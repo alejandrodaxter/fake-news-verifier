@@ -39,10 +39,12 @@ export default async function handler(req, res) {
       });
 
       let totalGlobal = 0;
+      let totalReports = 0;
       if (globalStatsResponse.ok) {
-        const globalStats = await globalStatsResponse.json();
-        totalGlobal = globalStats.totalGlobal || 0;
-      }
+      const globalStats = await globalStatsResponse.json();
+      totalGlobal = globalStats.totalGlobal || 0;
+      totalReports = globalStats.totalReports || 0;  // 🆕
+    }
 
       const startKeyboard = {
         inline_keyboard: [
@@ -66,16 +68,17 @@ export default async function handler(req, res) {
       };
 
       await sendTelegramMessageWithButtons(chatId,
-        `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
-        `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
-        `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias en total*\n\n` +
-        `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
-        `También puedes usar:\n` +
-        `/help - Ver ayuda\n` +
-        `/stats - Ver tus estadísticas`,
-        'Markdown',
-        startKeyboard
-      );
+  `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
+  `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
+  `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias únicas en total*\n` +
+  `🚨 *Los usuarios han reportado ${totalReports.toLocaleString()} noticias como falsas*\n\n` +  // 🆕
+  `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
+  `También puedes usar:\n` +
+  `/help - Ver ayuda\n` +
+  `/stats - Ver tus estadísticas`,
+  'Markdown',
+  startKeyboard
+);
       return res.status(200).json({ ok: true });
     }
 
