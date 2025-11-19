@@ -315,20 +315,25 @@ async function checkDomainRisk(hostname) {
     score += titleAnalysis.contentScore;
     reasons.push(...titleAnalysis.penalties);
 
-    // Verificar reportes comunitarios
-    const { data: reportData } = await supabase
-      .from('reports')
-      .select('*', { count: 'exact' })
-      .eq('url', url);
+    // Verificar reportes comunitarios CON TRY-CATCH
+    try {
+      const { data: reportData } = await supabase
+        .from('reports')
+        .select('*', { count: 'exact' })
+        .eq('url', url);
 
-    const reportCount = reportData?.length || 0;
+      const reportCount = reportData?.length || 0;
 
-    if (reportCount >= 2) {
-      score -= 25;
-      reasons.push(`❌ ${reportCount} usuarios reportaron esta noticia como falsa`);
-    } else if (reportCount >= 1) {
-      score -= 15;
-      reasons.push(`🚨 ${reportCount} usuario${reportCount > 1 ? 's' : ''} reportó esta noticia como sospechosa`);
+      if (reportCount >= 2) {
+        score -= 25;
+        reasons.push(`❌ ${reportCount} usuarios reportaron esta noticia como falsa`);
+      } else if (reportCount === 1) {
+        score -= 15;
+        reasons.push(`🚨 1 usuario reportó esta noticia como sospechosa`);
+      }
+    } catch (error) {
+      console.log('Error verificando reportes (continuando sin ellos):', error.message);
+      // Continuar sin reportes si falla
     }
 
     // Normalizar score (0-100)
@@ -428,7 +433,7 @@ async function checkDomainRisk(hostname) {
                    req.headers['x-forwarded-for']?.split(',')[0] || 
                    req.headers['x-real-ip'] || 
                    'unknown';
-    console.log('💾 Guardando con user_ip:', userIp);
+    console.log('💾 Guardando verificación con user_ip:', userIp);
     
     await supabase.from('verifications').insert([{
       url: url,
