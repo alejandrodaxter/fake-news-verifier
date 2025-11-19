@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       if (globalStatsResponse.ok) {
       const globalStats = await globalStatsResponse.json();
       totalGlobal = globalStats.totalGlobal || 0;
-      totalReports = globalStats.totalReports || 0;  // 🆕
+      totalReports = globalStats.totalReports || 0;
     }
 
       const startKeyboard = {
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
   `¡Hola! 👋 Soy el bot verificador de FakeNews.\n\n` +
   `📌 Envíame cualquier URL de una noticia y te diré si es confiable o no.\n\n` +
   `🌍 *Hemos verificado ${totalGlobal.toLocaleString()} noticias únicas en total*\n` +
-  `🚨 *Los usuarios han reportado ${totalReports.toLocaleString()} noticias como falsas*\n\n` +  // 🆕
+  `🚨 *Los usuarios han reportado ${totalReports.toLocaleString()} noticias como falsas*\n\n` +
   `Ejemplo:\nhttps://www.eltiempo.com/noticia\n\n` +
   `También puedes usar:\n` +
   `/help - Ver ayuda\n` +
@@ -92,6 +92,7 @@ export default async function handler(req, res) {
         `✅ Verde = Confiable\n` +
         `⚠️ Amarillo = Dudoso\n` +
         `❌ Rojo = Falso\n\n` +
+        `🔗 *Acepto links acortados* (bit.ly, t.co, tinyurl, etc.)\n\n` +
         `_Desarrollado para detectar desinformación_`,
         'Markdown'
       );
@@ -219,7 +220,7 @@ console.log('✅ Data recibida de verify:', JSON.stringify(data, null, 2));
         [
           {
             text: '🚫 Reportar como falsa',
-            callback_data: `report:${urlData.id}`  // ← Ahora usa ID corto
+            callback_data: `report:${urlData.id}`
           }
         ]
       ]
@@ -414,6 +415,7 @@ async function handleCallback(callback_query, req) {
       `✅ Verde = Confiable\n` +
       `⚠️ Amarillo = Dudoso\n` +
       `❌ Rojo = Falso\n\n` +
+      `🔗 *Acepto links acortados* (bit.ly, t.co, tinyurl, etc.)\n\n` +
       `_Desarrollado para detectar desinformación_`,
       'Markdown'
     );
