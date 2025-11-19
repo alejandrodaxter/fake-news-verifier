@@ -28,7 +28,6 @@ export default async function handler(req, res) {
     const chatId = message.chat.id;
     const text = message.text.trim();
 
-    // Comando /start
     if (text === '/start') {
       const globalStatsResponse = await fetch(`${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/global-stats`, {
         method: 'GET',
@@ -66,7 +65,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Comando /help
     if (text === '/help') {
       await sendTelegramMessage(chatId,
         `🔍 *Cómo usar el bot:*\n\n` +
@@ -83,13 +81,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Comando /stats
     if (text === '/stats') {
       await sendStatsMessage(chatId, req);
       return res.status(200).json({ ok: true });
     }
 
-    // Verificar si es una URL
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const urls = text.match(urlRegex);
 
@@ -102,10 +98,8 @@ export default async function handler(req, res) {
 
     const url = urls[0];
 
-    // Mensaje de carga
     await sendTelegramMessage(chatId, `🔍 Verificando URL...\n\n${url}`);
 
-    // Llamar al verificador CON TIMEOUT DE 40 SEGUNDOS
     let verifyResponse;
     try {
       console.log('🚀 Llamando a verify.js...');
@@ -116,7 +110,7 @@ export default async function handler(req, res) {
           body: JSON.stringify({ url, userIp: `telegram_${chatId}` })
         }),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout')), 40000)  // 40 segundos
+          setTimeout(() => reject(new Error('Timeout')), 40000)
         )
       ]);
     } catch (error) {
@@ -137,7 +131,6 @@ export default async function handler(req, res) {
     const data = await verifyResponse.json();
     console.log('✅ Respuesta recibida:', data.level);
 
-    // Formatear respuesta
     let emoji = '❌';
     let nivel = 'FALSO';
 
@@ -173,23 +166,40 @@ export default async function handler(req, res) {
 
     response += `\n\n_Verifica más en: fake-news-verifier.vercel.app_`;
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    );
+    // Intentar guardar en pending_reports (con manejo de errores)
+    let reportId = null;
+    try {
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_ANON_KEY
+      );
 
-    const { data: urlData } = await supabase
-      .from('pending_reports')
-      .insert([{ url: url }])
-      .select()
-      .single();
+      const { data: urlData, error } = await supabase
+        .from('pending_reports')
+        .insert([{ url: url }])
+        .select()
+        .single();
+
+      if (!error && urlData) {
+        reportId = urlData.id;
+      } else {
+        console.error('Error guardando pending_report:', error);
+      }
+    } catch (error) {
+      console.error('Error en pending_reports:', error);
+    }
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '🔍 Ver análisis completo', url: `https://fake-news-verifier.vercel.app/verificador.html` }],
-        [{ text: '🚫 Reportar como falsa', callback_data: `report:${urlData.id}` }]
+        [{ text: '🔍 Ver análisis completo', url: `https://fake-news-verifier.vercel.app/verificador.html` }]
       ]
     };
+
+    if (reportId) {
+      keyboard.inline_keyboard.push([
+        { text: '🚫 Reportar como falsa', callback_data: `report:${reportId}` }
+      ]);
+    }
 
     await sendTelegramMessageWithButtons(chatId, response, 'Markdown', keyboard);
     return res.status(200).json({ ok: true });
@@ -292,11 +302,16 @@ async function handleCallback(callback_query, req) {
       process.env.SUPABASE_ANON_KEY
     );
     
-    const { data: urlData } = await supabase
+    const { data: urlData, error } = await supabase
       .from('pending_reports')
       .select('url')
       .eq('id', urlId)
       .single();
+    
+    if (error || !urlData) {
+      await sendTelegramMessage(chatId, `❌ Error al procesar reporte.`);
+      return;
+    }
     
     const url = urlData.url;
     

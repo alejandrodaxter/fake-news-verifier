@@ -353,10 +353,10 @@ async function checkDomainRisk(hostname) {
   // Evaluar la URL
   const result = await evaluate(url, supabase, url);
 
-  // Verificar riesgo del dominio (OPTIMIZADO con timeout 2s)
-  const domainRisk = await checkDomainRisk(result.hostname);
-  result.score += domainRisk.score;
-  result.reasons.push(...domainRisk.penalties);
+  // ⚠️ DESACTIVADO TEMPORALMENTE - checkDomainRisk tarda 4-6s
+  // const domainRisk = await checkDomainRisk(result.hostname);
+  // result.score += domainRisk.score;
+  // result.reasons.push(...domainRisk.penalties);
 
   // Re-normalizar score
   result.score = Math.max(0, Math.min(100, result.score));
