@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
   const RISKY_TLDS = [".xyz",".click",".buzz",".top",".loan",".info",".club",".work",".tk",".gq",".ml"];
   
-  const SHORTENERS = ["bit.ly","t.co","tinyurl.com","goo.gl","ow.ly","is.gd","buff.ly","rb.gy"];
+  const SHORTENERS = ["bit.ly","t.co","tinyurl.com","goo.gl","ow.ly","is.gd","buff.ly","rb.gy","n9.cl","cutt.ly","short.io","tiny.cc"];
   
   const CLICKBAIT = [
     /increíble/i, /no lo (vas|vas a) creer/i, /impactante/i, /urgente/i, /secreto/i,
