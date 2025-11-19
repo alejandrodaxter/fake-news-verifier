@@ -14,28 +14,42 @@ export default async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY
     );
 
-    // TOTAL GLOBAL de URLs ÚNICAS verificadas
-const { data: uniqueUrls } = await supabase
-  .from('verifications')
-  .select('url');
+    // TOTAL de URLs ÚNICAS verificadas
+    const { data: uniqueUrls } = await supabase
+      .from('verifications')
+      .select('url');
 
-   // Contar URLs únicas
-   const totalGlobal = new Set(uniqueUrls?.map(v => v.url) || []).size;;
+    const totalGlobal = new Set(uniqueUrls?.map(v => v.url) || []).size;
 
-   // 🆕 TOTAL de reportes
+    // TOTAL de usuarios únicos (IPs)
+    const { data: uniqueIPs } = await supabase
+      .from('verifications')
+      .select('user_ip');
+
+    const usuariosActivos = new Set(uniqueIPs?.map(v => v.user_ip) || []).size;
+
+    // TOTAL de reportes
     const { count: totalReports } = await supabase
       .from('reports')
       .select('*', { count: 'exact', head: true });
 
     return res.status(200).json({
+      // Para index.html (app.js)
+      totalVerificaciones: totalGlobal || 0,
+      usuariosActivos: usuariosActivos || 0,
+      totalReportes: totalReports || 0,
+      // Para telegram.js
       totalGlobal: totalGlobal || 0,
-      totalReports: totalReports || 0  // 🆕
+      totalReports: totalReports || 0
     });
 
   } catch (error) {
     console.error('Error en /api/global-stats:', error);
     return res.status(500).json({
       error: error.message,
+      totalVerificaciones: 0,
+      usuariosActivos: 0,
+      totalReportes: 0,
       totalGlobal: 0,
       totalReports: 0
     });
