@@ -40,6 +40,49 @@ export default async function handler(req, res) {
     { legit: "eltiempo.com", fake: /eltiempo\.(co|cn|tk|ml)$/i }
   ];
 
+  // ===== FUNCIÓN PARA EXPANDIR URLs ACORTADAS =====
+  async function expandShortUrl(shortUrl) {
+    try {
+      const unshortenToken = process.env.UNSHORTEN_API_TOKEN;
+      
+      if (!unshortenToken) {
+        console.log('UNSHORTEN_API_TOKEN=00d47c3e95f43acc5caf5faaaae330f5dea2f9eb');
+        return null;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const apiUrl = `https://unshorten.me/api/v2/unshorten?url=${encodeURIComponent(shortUrl)}`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${unshortenToken}`
+        },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.log('Unshorten API error:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      
+      // La respuesta tiene la URL expandida en diferentes campos según la API
+      const expandedUrl = data.unshortened_url || data.resolved_url || data.url;
+      
+      return expandedUrl || null;
+      
+    } catch (error) {
+      console.log('Error expandiendo URL:', error.message);
+      return null;
+    }
+  }
+
   // ===== FUNCIONES DE ANÁLISIS =====
   function parseUrl(input) {
     try {
@@ -67,13 +110,13 @@ function analyzeText(title, url) {
   const upperCaseCount = (title.match(/[A-Z]/g) || []).length;
   if (upperCaseCount > title.length * 0.4) {
     contentScore -= 15;
-    penalties.push('⚠️ Título con mayúsculas excesivas');
+    penalties.push('⚠️ Título con mayúsculas excesivas: estilo sensacionalista');
   }
   
   // 2. SIGNOS DE EXCLAMACIÓN MÚLTIPLES
   if (/!!!+/.test(title)) {
     contentScore -= 10;
-    penalties.push('⚠️ Múltiples signos de exclamación');
+    penalties.push('⚠️ Múltiples signos de exclamación: técnica de clickbait');
   }
   
   // 3. PALABRAS SENSACIONALISTAS
@@ -90,24 +133,24 @@ function analyzeText(title, url) {
   
   if (sensationalCount >= 3) {
     contentScore -= 20;
-    penalties.push('❌ Lenguaje sensacionalista excesivo');
+    penalties.push('❌ Múltiples palabras de clickbait: "impactante", "increíble", "urgente", etc.');
   } else if (sensationalCount >= 2) {
     contentScore -= 10;
-    penalties.push('⚠️ Lenguaje emocional detectado');
+    penalties.push('⚠️ Título sensacionalista: usa palabras emocionales para atraer clicks');
   }
   
   // 4. NÚMEROS EXAGERADOS sin contexto
   const bigNumbers = text.match(/\d{5,}/g); // 5+ dígitos
   if (bigNumbers && bigNumbers.length >= 2) {
     contentScore -= 8;
-    penalties.push('⚠️ Cifras grandes sin contexto');
+    penalties.push('⚠️ Título con números exagerados: técnica común de clickbait para llamar tu atención');
   }
   
   // 5. PALABRAS TODO EN MAYÚSCULAS
   const allCapsWords = title.match(/\b[A-Z]{3,}\b/g);
   if (allCapsWords && allCapsWords.length >= 2) {
     contentScore -= 12;
-    penalties.push('⚠️ Palabras completas en mayúsculas');
+    penalties.push('⚠️ TEXTO EN MAYÚSCULAS: estilo sensacionalista usado para generar clicks');
   }
   
   return { contentScore, penalties };
@@ -152,7 +195,7 @@ async function checkDomainRisk(hostname) {
     const suspiciousCountries = ['CN', 'RU', 'KP', 'IR'];
     if (suspiciousCountries.includes(ipData.country_code)) {
       score -= 15;
-      penalties.push(`⚠️ Servidor en ${ipData.country_name} (ubicación inusual)`);
+      penalties.push(`⚠️ Servidor en ${ipData.country_name}: ubicación inusual para medios locales`);
     }
     
     // Verificar hosting profesional
@@ -173,7 +216,7 @@ async function checkDomainRisk(hostname) {
   }
 }
 
-  function evaluate(input) {
+  async function evaluate(input) {
     const p = parseUrl(input);
     const reasons = [];
     let score = 50;
@@ -190,7 +233,7 @@ async function checkDomainRisk(hostname) {
       reasons.push("✅ Dominio en lista de medios confiables");
     } else {
       score -= 10;
-      reasons.push("⚠️ Dominio fuera de la lista confiable definida");
+      reasons.push("⚠️ Medio no verificado: no está en nuestra lista de fuentes confiables reconocidas");
     }
 
     // 🔒 HTTPS
@@ -210,8 +253,15 @@ async function checkDomainRisk(hostname) {
 
     // 🔗 Acortadores
     if (SHORTENERS.includes(hostname)) {
-      score -= 10;
-      reasons.push("⚠️ Acortador de URL: requiere expandir y verificar el destino");
+      const expandedUrl = await expandShortUrl(input);
+      
+      if (expandedUrl && expandedUrl !== input) {
+        score -= 10;
+        reasons.push(`⚠️ URL acortada (${hostname}). Destino real: ${expandedUrl}`);
+      } else {
+        score -= 10;
+        reasons.push(`⚠️ Acortador de URL (${hostname}): oculta el destino real, verifica antes de hacer click`);
+      }
     }
 
     // 🎭 Typosquatting (dominios falsos)
@@ -225,32 +275,32 @@ async function checkDomainRisk(hostname) {
     // 🌐 Subdominios excesivos
     if (subdomains.length >= 2) {
       score -= 8;
-      reasons.push("⚠️ Varios subdominios: revisa si es sitio oficial");
+      reasons.push("⚠️ URL con subdominios sospechosos: verifica que sea el sitio oficial y no una copia falsa");
     }
 
     // 📊 Parámetros y tracking
     const paramCount = (path.match(/[?&][^=&]+=/g) || []).length;
     if (paramCount >= 4) {
       score -= 10;
-      reasons.push("⚠️ Demasiados parámetros en la URL");
+      reasons.push("⚠️ URL con múltiples rastreadores: puede estar recopilando información sobre ti");
     }
     if (/utm_/i.test(path) || /ref=/i.test(path)) {
       score -= 5;
-      reasons.push("⚠️ Señales de tracking/marketing en la URL");
+      reasons.push("⚠️ URL de marketing: puede redirigir a sitios de publicidad o recolectar tus datos");
     }
 
     // 📏 Longitud del slug
     const slugLen = path.replace(/^\//, "").length;
     if (slugLen > 180) {
       score -= 8;
-      reasons.push("⚠️ Ruta muy larga y críptica");
+      reasons.push("⚠️ URL inusualmente larga: posible intento de ocultar el destino real");
     }
 
     // 🎣 Clickbait en la ruta
     const clicks = CLICKBAIT.filter(r => r.test(path));
     if (clicks.length > 0) {
       score -= 20;
-      reasons.push("❌ Patrón de clickbait detectado en el slug");
+      reasons.push("❌ Patrón de clickbait detectado en el título");
     }
 
     // Análisis de contenido del título
@@ -278,7 +328,7 @@ score = Math.max(0, Math.min(100, score));
   }
 
   // Evaluar la URL
-const result = evaluate(url);
+const result = await evaluate(url);
 
 // Verificar riesgo del dominio por IP
 const domainRisk = await checkDomainRisk(result.hostname);
