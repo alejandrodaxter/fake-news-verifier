@@ -708,7 +708,7 @@ function clearHistory() {
 
 async function loadGlobalStats() {
   try {
-    const response = await fetch('/api/stats');
+    const response = await fetch('/api/global-stats');
     const data = await response.json();
     
     const statsDiv = document.getElementById('globalStats');
