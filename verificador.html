@@ -27,7 +27,7 @@
     }
 
     html {
-      font-size: 20px;
+      font-size: 20px; /* si quieres más pequeño, bájalo a 16px */
     }
 
     body {
@@ -275,6 +275,75 @@
       line-height: 1.5;
     }
 
+    /* ===== LAYOUT RESULTADO + SEMÁFORO ===== */
+    .result-layout {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+
+    .result-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-side {
+      width: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== SEMÁFORO ===== */
+    .traffic-light {
+      width: 70px;
+      background: #1a1d29;
+      padding: 12px;
+      border-radius: 25px;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+
+    .light {
+      width: 35px;
+      height: 35px;
+      margin: 6px 0;
+      border-radius: 50%;
+      background: #2a2d3a;
+      opacity: 0.3;
+      transition: all 0.4s ease;
+    }
+
+    .light.red.on {
+      background: #ef4444;
+      opacity: 1;
+      box-shadow: 0 0 20px #ef4444, 0 0 40px rgba(239, 68, 68, 0.5);
+    }
+
+    .light.yellow.on {
+      background: #facc15;
+      opacity: 1;
+      box-shadow: 0 0 20px #facc15, 0 0 40px rgba(250, 204, 21, 0.5);
+    }
+
+    .light.green.on {
+      background: #22c55e;
+      opacity: 1;
+      box-shadow: 0 0 20px #22c55e, 0 0 40px rgba(34, 197, 94, 0.5);
+    }
+
+    .btn-reportar {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      min-height: 0;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.55);
+    }
+
     /* ===== LAYOUT INFERIOR (STATS + HISTORIAL) ===== */
     .bottom-layout {
       display: grid;
@@ -388,6 +457,16 @@
       .bottom-layout {
         grid-template-columns: 1fr;
       }
+      .result-layout {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .result-side {
+        flex-direction: row;
+        width: auto;
+        gap: 16px;
+        justify-content: flex-start;
+      }
     }
 
     @media (max-width: 520px) {
@@ -445,9 +524,31 @@
         </p>
 
         <div id="scoreBadge"></div>
-        <div id="resultado"></div>
-        <div id="detalles"></div>
-        <div id="factchecks"></div>
+
+        <!-- Layout resultado + semáforo + botón reportar -->
+        <div class="result-layout">
+          <div class="result-main">
+            <div id="resultado"></div>
+            <div id="detalles"></div>
+            <div id="factchecks"></div>
+          </div>
+
+          <div class="result-side">
+            <!-- 🚦 SEMÁFORO -->
+            <div class="traffic-light" id="trafficLight" style="display: none;">
+              <div class="light red"></div>
+              <div class="light yellow"></div>
+              <div class="light green"></div>
+            </div>
+
+            <!-- 🚫 BOTÓN REPORTAR -->
+            <div id="reportBtn" style="display: none; margin-top: 12px; text-align: center;">
+              <button id="btnReportar" class="btn-reportar">
+                🚫 Reportar como falsa
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- STATS + HISTORIAL -->
@@ -484,6 +585,10 @@
     const stats = document.getElementById('stats');
     const history = document.getElementById('history');
 
+    const trafficLight = document.getElementById('trafficLight');
+    const reportBtnContainer = document.getElementById('reportBtn');
+    const btnReportar = document.getElementById('btnReportar');
+
     // Array para guardar historial en memoria
     let verificacionesRecientes = [];
 
@@ -516,6 +621,10 @@
       detalles.innerHTML = '';
       factchecks.innerHTML = '';
 
+      // Ocultar semáforo y botón reportar mientras carga
+      if (trafficLight) trafficLight.style.display = 'none';
+      if (reportBtnContainer) reportBtnContainer.style.display = 'none';
+
       try {
         const response = await fetch('/api/verify', {
           method: 'POST',
@@ -541,28 +650,32 @@
     }
 
     function mostrarResultado(data) {
-      let badgeClass, emoji, nivel, mensaje;
+      let badgeClass, emoji, nivel, mensaje, colorSemaforo;
 
       if (data.level === 'ok') {
         badgeClass = 'badge-ok';
         emoji = '✅';
         nivel = 'CONFIABLE';
         mensaje = 'Esta fuente parece confiable según nuestro análisis.';
+        colorSemaforo = 'green';
       } else if (data.level === 'warn') {
         badgeClass = 'badge-warn';
         emoji = '⚠️';
         nivel = 'DUDOSO';
         mensaje = 'Señales mixtas detectadas. Verifica con otras fuentes.';
+        colorSemaforo = 'yellow';
       } else if (data.level === 'bad') {
         badgeClass = 'badge-danger';
         emoji = '❌';
         nivel = 'FALSO';
         mensaje = 'Múltiples señales de alerta. No recomendamos compartir.';
+        colorSemaforo = 'red';
       } else {
         badgeClass = 'badge-danger';
         emoji = '🚨';
         nivel = 'ERROR';
         mensaje = 'No pudimos determinar la confiabilidad.';
+        colorSemaforo = 'red';
       }
 
       scoreBadge.innerHTML = `${emoji} <strong>${nivel}</strong>`;
@@ -586,6 +699,59 @@
           <strong>🔎 Verificaciones encontradas:</strong> 
           ${data.factChecks.length} en Google Fact Check API
         `;
+      }
+
+      // Actualizar semáforo
+      actualizarSemaforo(colorSemaforo);
+
+      // Mostrar botón reportar
+      if (btnReportar && reportBtnContainer) {
+        reportBtnContainer.style.display = 'block';
+        btnReportar.onclick = () => reportarNoticia(inputUrl.value);
+      }
+    }
+
+    function actualizarSemaforo(color) {
+      if (!trafficLight) return;
+
+      const lights = trafficLight.querySelectorAll('.light');
+
+      // Mostrar semáforo
+      trafficLight.style.display = 'flex';
+
+      // Apagar todas
+      lights.forEach(light => light.classList.remove('on'));
+
+      // Encender la correcta
+      if (color === 'green') {
+        lights[2].classList.add('on');
+      } else if (color === 'yellow') {
+        lights[1].classList.add('on');
+      } else {
+        lights[0].classList.add('on');
+      }
+    }
+
+    async function reportarNoticia(url) {
+      if (!url) return;
+
+      if (!confirm('¿Seguro que quieres reportar esta noticia como falsa?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        if (!response.ok) throw new Error('Error al reportar');
+
+        alert('✅ Reporte enviado. Gracias por ayudarnos a mantener la plataforma segura.');
+        
+      } catch (error) {
+        alert('❌ Error al enviar el reporte. Intenta de nuevo.');
       }
     }
 
