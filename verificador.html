@@ -47,7 +47,7 @@
         0 0 80px rgba(248, 113, 113, 0.2);
       padding: 32px 32px 26px;
       width: 100%;
-      max-width: 960px;
+      max-width: 1200px;
       border: 1px solid var(--accent-soft);
       display: flex;
       flex-direction: column;
@@ -451,14 +451,9 @@
 
         <div class="panel">
           <div class="panel-header">
-            <span>🕒 Información del sistema</span>
+            <span>🕒 Historial reciente</span>
           </div>
-          <div id="history">
-            <div style="margin-bottom: 8px;"><strong>Estado:</strong> Activo ✅</div>
-            <div style="margin-bottom: 8px;"><strong>Fact-checkers:</strong> Google Fact Check API</div>
-            <div style="margin-bottom: 8px;"><strong>Análisis:</strong> Dominio + Contenido + IA</div>
-            <div><strong>Privacidad:</strong> No guardamos datos personales</div>
-          </div>
+          <div id="history">Aún no has verificado ninguna noticia.</div>
         </div>
       </div>
 
@@ -477,6 +472,10 @@
     const detalles = document.getElementById('detalles');
     const factchecks = document.getElementById('factchecks');
     const stats = document.getElementById('stats');
+    const history = document.getElementById('history');
+
+    // Array para guardar historial en memoria
+    let verificacionesRecientes = [];
 
     // Cargar stats globales al inicio
     loadGlobalStats();
@@ -518,6 +517,7 @@
 
         const data = await response.json();
         mostrarResultado(data);
+        agregarAlHistorial(inputUrl.value, data.level);
         loadGlobalStats(); // Recargar stats
 
       } catch (error) {
@@ -577,6 +577,66 @@
           ${data.factChecks.length} en Google Fact Check API
         `;
       }
+    }
+
+    function agregarAlHistorial(url, level) {
+      const ahora = new Date();
+      const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      
+      let emoji, colorClass;
+      if (level === 'ok') {
+        emoji = '✅';
+        colorClass = 'color: #22c55e';
+      } else if (level === 'warn') {
+        emoji = '⚠️';
+        colorClass = 'color: #facc15';
+      } else {
+        emoji = '❌';
+        colorClass = 'color: #ef4444';
+      }
+
+      // Extraer dominio
+      let dominio;
+      try {
+        dominio = new URL(url).hostname;
+      } catch {
+        dominio = url.substring(0, 40) + '...';
+      }
+
+      // Agregar al inicio del array
+      verificacionesRecientes.unshift({
+        dominio,
+        emoji,
+        colorClass,
+        hora
+      });
+
+      // Limitar a 5 verificaciones
+      if (verificacionesRecientes.length > 5) {
+        verificacionesRecientes.pop();
+      }
+
+      // Actualizar UI
+      actualizarHistorialUI();
+    }
+
+    function actualizarHistorialUI() {
+      if (verificacionesRecientes.length === 0) {
+        history.innerHTML = 'Aún no has verificado ninguna noticia.';
+        return;
+      }
+
+      history.innerHTML = verificacionesRecientes.map(v => `
+        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.15);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 1.1rem;">${v.emoji}</span>
+            <strong style="font-size: 0.9rem; ${v.colorClass}">${v.dominio}</strong>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); padding-left: 26px;">
+            ${v.hora}
+          </div>
+        </div>
+      `).join('');
     }
 
     async function loadGlobalStats() {
