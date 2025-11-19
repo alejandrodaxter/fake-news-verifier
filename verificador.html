@@ -32,10 +32,7 @@
       background: radial-gradient(circle at top, #1e293b 0%, #020617 45%, #000 100%);
       color: var(--text-main);
       min-height: 100vh;
-      padding: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      padding: 0;
     }
 
     /* ===== CARD PRINCIPAL ===== */
@@ -46,8 +43,8 @@
         0 22px 60px rgba(0, 0, 0, 0.85),
         0 0 80px rgba(248, 113, 113, 0.2);
       padding: 32px 32px 26px;
-      width: 100%;
-      max-width: 1400px;
+      width: min(96vw, 1400px);
+      margin: 32px auto;
       border: 1px solid var(--accent-soft);
       display: flex;
       flex-direction: column;
