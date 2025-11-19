@@ -308,7 +308,23 @@ async function checkDomainRisk(hostname) {
     score += titleAnalysis.contentScore;
     reasons.push(...titleAnalysis.penalties);
 
-// Normalizar score (0-100)
+  // Verificar reportes comunitarios
+  const { data: reportData } = await supabase
+  .from('reports')
+  .select('*', { count: 'exact' })
+  .eq('url', url);
+
+  const reportCount = reportData?.length || 0;
+
+  if (reportCount >= 1) {
+  score -= 15;
+  reasons.push(`🚨 ${reportCount} usuarios reportaron esta noticia como sospechosa`);
+} else if (reportCount >= 2) {
+  score -= 25;
+  reasons.push(`❌ ${reportCount} usuarios reportaron esta noticia como falsa`);
+  }
+
+    // Normalizar score (0-100)
 score = Math.max(0, Math.min(100, score));
 
     // Determinar nivel y mensaje
